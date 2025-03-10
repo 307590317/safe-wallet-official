@@ -13,11 +13,10 @@ import { useAppDispatch } from '@/store'
 import { useRouter } from 'next/router'
 import { addOrUpdateSafe } from '@/store/addedSafesSlice'
 import { defaultSafeInfo } from '@/store/safeInfoSlice'
+import { upsertAddressBookEntry } from '@/store/addressBookSlice'
 import { LOAD_SAFE_EVENTS, OPEN_SAFE_LABELS, OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import { AppRoutes } from '@/config/routes'
 import ReviewRow from '@/components/new-safe/ReviewRow'
-import { upsertAddressBookEntries } from '@/store/addressBookSlice'
-import { maybePlural } from '@/utils/formatters'
 
 const SafeReviewStep = ({ data, onBack }: StepRenderProps<LoadSafeFormData>) => {
   const chain = useCurrentChain()
@@ -45,8 +44,8 @@ const SafeReviewStep = ({ data, onBack }: StepRenderProps<LoadSafeFormData>) => 
     )
 
     dispatch(
-      upsertAddressBookEntries({
-        chainIds: [chainId],
+      upsertAddressBookEntry({
+        chainId,
         address: safeAddress,
         name: safeName,
       }),
@@ -60,8 +59,8 @@ const SafeReviewStep = ({ data, onBack }: StepRenderProps<LoadSafeFormData>) => 
       }
 
       dispatch(
-        upsertAddressBookEntries({
-          chainIds: [chainId],
+        upsertAddressBookEntry({
+          chainId,
           address,
           name: entryName,
         }),
@@ -119,7 +118,7 @@ const SafeReviewStep = ({ data, onBack }: StepRenderProps<LoadSafeFormData>) => 
             name="Threshold"
             value={
               <Typography>
-                {data.threshold} out of {data.owners.length} signer{maybePlural(data.owners)}
+                {data.threshold} out of {data.owners.length} signer(s)
               </Typography>
             }
           />

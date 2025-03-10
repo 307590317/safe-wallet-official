@@ -1,5 +1,3 @@
-import AddressInputReadOnly from '@/components/common/AddressInputReadOnly'
-import useAddressBook from '@/hooks/useAddressBook'
 import type { ReactElement } from 'react'
 import { useEffect, useCallback, useRef, useMemo } from 'react'
 import {
@@ -58,8 +56,6 @@ const AddressInput = ({
   const watchedValue = useWatch({ name, control })
   const currentShortName = currentChain?.shortName || ''
 
-  const addressBook = useAddressBook()
-
   // Fetch an ENS resolution for the current address
   const isDomainLookupEnabled = !!currentChain && hasFeature(currentChain, FEATURES.DOMAIN_LOOKUP)
   const { address, resolverError, resolving } = useNameResolver(isDomainLookupEnabled ? watchedValue : '')
@@ -114,12 +110,6 @@ const AddressInput = ({
     </InputAdornment>
   )
 
-  const resetName = () => {
-    if (!props.disabled && addressBook[watchedValue]) {
-      setValue(name, '')
-    }
-  }
-
   return (
     <>
       <TextField
@@ -130,16 +120,12 @@ const AddressInput = ({
         label={<>{error?.message || props.label || `Recipient address${isDomainLookupEnabled ? ' or ENS' : ''}`}</>}
         error={!!error}
         fullWidth
-        onClick={resetName}
         spellCheck={false}
         InputProps={{
           ...(props.InputProps || {}),
-          className: addressBook[watchedValue] ? css.readOnly : undefined,
 
-          startAdornment: addressBook[watchedValue] ? (
-            <AddressInputReadOnly address={watchedValue} />
-          ) : (
-            // Display the current short name in the adornment, unless the value contains the same prefix
+          // Display the current short name in the adornment, unless the value contains the same prefix
+          startAdornment: (
             <InputAdornment position="end" sx={{ ml: 0, gap: 1 }}>
               {watchedValue && !fieldError ? (
                 <Identicon address={watchedValue} size={32} />

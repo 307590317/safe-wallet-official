@@ -20,21 +20,9 @@ type SendNftBatchProps = {
 }
 
 const NftItem = ({ image, name, description }: { image: string; name: string; description?: string }) => (
-  <Grid
-    container
-    wrap="nowrap"
-    sx={{
-      gap: 2,
-      alignItems: 'center',
-    }}
-  >
+  <Grid container gap={2} alignItems="center" wrap="nowrap">
     <Grid item>
-      <Box
-        sx={{
-          width: 40,
-          height: 40,
-        }}
-      >
+      <Box width={40} height={40}>
         <ImageFallback
           src={image}
           fallbackSrc=""
@@ -45,21 +33,14 @@ const NftItem = ({ image, name, description }: { image: string; name: string; de
       </Box>
     </Grid>
 
-    <Grid
-      item
-      sx={{
-        overflow: 'hidden',
-      }}
-    >
+    <Grid item overflow="hidden">
       <Typography
         data-testid="nft-item-name"
         variant="body2"
-        sx={{
-          fontWeight: 700,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
+        fontWeight={700}
+        whiteSpace="nowrap"
+        overflow="hidden"
+        textOverflow="ellipsis"
       >
         {name}
       </Typography>
@@ -67,13 +48,11 @@ const NftItem = ({ image, name, description }: { image: string; name: string; de
       {description && (
         <Typography
           variant="body2"
-          sx={{
-            color: 'text.secondary',
-            whiteSpace: 'nowrap',
-            display: 'block',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
+          color="text.secondary"
+          whiteSpace="nowrap"
+          display="block"
+          overflow="hidden"
+          textOverflow="ellipsis"
         >
           {description}
         </Typography>
@@ -86,14 +65,12 @@ export const NftItems = ({ tokens }: { tokens: SafeCollectibleResponse[] }) => {
   return (
     <Box
       data-testid="nft-item-list"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        overflow: 'auto',
-        maxHeight: '20vh',
-        minHeight: '40px',
-      }}
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      overflow="auto"
+      maxHeight="20vh"
+      minHeight="40px"
     >
       {tokens.map((token) => (
         <NftItem
@@ -139,14 +116,7 @@ const SendNftBatch = ({ params, onSubmit }: SendNftBatchProps) => {
             <AddressBookInput name={Field.recipient} canAdd={isAddressValid} />
           </FormControl>
 
-          <Typography
-            data-testid="selected-nfts"
-            variant="body2"
-            sx={{
-              color: 'text.secondary',
-              mb: 2,
-            }}
-          >
+          <Typography data-testid="selected-nfts" variant="body2" color="text.secondary" mb={2}>
             Selected NFTs
           </Typography>
 

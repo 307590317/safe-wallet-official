@@ -5,7 +5,7 @@ import { useCustomSafeApps } from '@/hooks/safe-apps/useCustomSafeApps'
 import { usePinnedSafeApps } from '@/hooks/safe-apps/usePinnedSafeApps'
 import { useBrowserPermissions, useSafePermissions } from './permissions'
 import { useRankedSafeApps } from '@/hooks/safe-apps/useRankedSafeApps'
-import { SAFE_APPS_EVENTS, type SAFE_APPS_LABELS, trackSafeAppEvent } from '@/services/analytics'
+import { SAFE_APPS_EVENTS, trackSafeAppEvent } from '@/services/analytics'
 
 type ReturnType = {
   allSafeApps: SafeAppData[]
@@ -18,7 +18,7 @@ type ReturnType = {
   customSafeAppsLoading: boolean
   remoteSafeAppsError?: Error
   addCustomApp: (app: SafeAppData) => void
-  togglePin: (appId: number, eventLabel: SAFE_APPS_LABELS) => void
+  togglePin: (appId: number) => void
   removeCustomApp: (appId: number) => void
 }
 
@@ -61,17 +61,17 @@ const useSafeApps = (): ReturnType => {
     [updateCustomSafeApps, customSafeApps, removeSafePermissions, removeBrowserPermissions],
   )
 
-  const togglePin = (appId: number, eventLabel: SAFE_APPS_LABELS) => {
+  const togglePin = (appId: number) => {
     const alreadyPinned = pinnedSafeAppIds.has(appId)
     const newSet = new Set(pinnedSafeAppIds)
     const appName = allSafeApps.find((app) => app.id === appId)?.name
 
     if (alreadyPinned) {
       newSet.delete(appId)
-      trackSafeAppEvent({ ...SAFE_APPS_EVENTS.UNPIN, label: eventLabel }, appName)
+      trackSafeAppEvent(SAFE_APPS_EVENTS.UNPIN, appName)
     } else {
       newSet.add(appId)
-      trackSafeAppEvent({ ...SAFE_APPS_EVENTS.PIN, label: eventLabel }, appName)
+      trackSafeAppEvent(SAFE_APPS_EVENTS.PIN, appName)
     }
     updatePinnedSafeApps(newSet)
   }

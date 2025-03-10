@@ -7,17 +7,10 @@ import * as web3 from '@/hooks/wallets/web3'
 import * as notifications from './notifications'
 import { act, renderHook } from '@/tests/test-utils'
 import { TxModalContext } from '@/components/tx-flow'
-import useSafeWalletProvider, { useTxFlowApi } from './useSafeWalletProvider'
+import useSafeWalletProvider, { _useTxFlowApi } from './useSafeWalletProvider'
 import { SafeWalletProvider } from '.'
-import type { RootState } from '@/store'
 import { makeStore } from '@/store'
 import * as messages from '@/utils/safe-messages'
-import { faker } from '@faker-js/faker'
-import { Interface } from 'ethers'
-import { getCreateCallDeployment } from '@safe-global/safe-deployments'
-import { useCurrentChain } from '@/hooks/useChains'
-import { chainBuilder } from '@/tests/builders/chains'
-import { FEATURES } from '@/utils/chains'
 
 const appInfo = {
   id: 1,
@@ -34,23 +27,9 @@ jest.mock('./notifications', () => {
   }
 })
 
-jest.mock('@/hooks/useChains', () => ({
-  __esModule: true,
-  ...jest.requireActual('@/hooks/useChains'),
-  useCurrentChain: jest.fn(),
-}))
-
 describe('useSafeWalletProvider', () => {
-  const mockUseCurrentChain = useCurrentChain as jest.MockedFunction<typeof useCurrentChain>
-
   beforeEach(() => {
     jest.clearAllMocks()
-
-    mockUseCurrentChain.mockReturnValue(
-      chainBuilder()
-        .with({ chainId: '1', features: [FEATURES.SAFE_141 as any] })
-        .build(),
-    )
   })
 
   describe('useSafeWalletProvider', () => {
@@ -66,7 +45,6 @@ describe('useSafeWalletProvider', () => {
                 value: '0x1234567890000000000000000000000000000000',
               },
               deployed: true,
-              version: '1.3.0',
             } as unknown as ExtendedSafeInfo,
           },
         },
@@ -78,7 +56,7 @@ describe('useSafeWalletProvider', () => {
 
   describe('_useTxFlowApi', () => {
     it('should return a provider', () => {
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
 
       expect(result.current?.signMessage).toBeDefined()
       expect(result.current?.signTypedMessage).toBeDefined()
@@ -86,7 +64,6 @@ describe('useSafeWalletProvider', () => {
       expect(result.current?.getBySafeTxHash).toBeDefined()
       expect(result.current?.switchChain).toBeDefined()
       expect(result.current?.proxy).toBeDefined()
-      expect(result.current?.getCreateCallTransaction).toBeDefined()
     })
 
     it('should open signing window for off-chain messages', () => {
@@ -96,7 +73,7 @@ describe('useSafeWalletProvider', () => {
 
       const mockSetTxFlow = jest.fn()
 
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
         // TODO: Improve render/renderHook to allow custom wrappers within the "defaults"
         wrapper: ({ children }) => (
           <Provider store={makeStore()}>
@@ -129,19 +106,10 @@ describe('useSafeWalletProvider', () => {
 
       const mockSetTxFlow = jest.fn()
 
-      const testStore = makeStore({
-        settings: {
-          signing: {
-            onChainSigning: false,
-            blindSigning: false,
-          },
-        },
-      } as Partial<RootState>)
-
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
         // TODO: Improve render/renderHook to allow custom wrappers within the "defaults"
         wrapper: ({ children }) => (
-          <Provider store={testStore}>
+          <Provider store={makeStore({ settings: { signing: { useOnChainSigning: false } } })}>
             <TxModalContext.Provider value={{ setTxFlow: mockSetTxFlow } as any}>{children}</TxModalContext.Provider>
           </Provider>
         ),
@@ -178,7 +146,7 @@ describe('useSafeWalletProvider', () => {
 
       const mockSetTxFlow = jest.fn()
 
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
         // TODO: Improve render/renderHook to allow custom wrappers within the "defaults"
         wrapper: ({ children }) => (
           <Provider store={makeStore()}>
@@ -248,7 +216,7 @@ describe('useSafeWalletProvider', () => {
 
       const mockSetTxFlow = jest.fn()
 
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
         // TODO: Improve render/renderHook to allow custom wrappers within the "defaults"
         wrapper: ({ children }) => (
           <Provider store={makeStore()}>
@@ -312,7 +280,7 @@ describe('useSafeWalletProvider', () => {
         hash: '0x123',
       }))
 
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
 
       const resp = await result.current?.getBySafeTxHash('0x123456789000')
 
@@ -326,9 +294,10 @@ describe('useSafeWalletProvider', () => {
         push: mockPush,
       } as unknown as router.NextRouter)
 
-      jest.spyOn(window, 'confirm').mockReturnValue(true)
+      // @ts-expect-error - auto accept prompt
+      jest.spyOn(window, 'prompt').mockReturnValue(true)
 
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'), {
         initialReduxState: {
           chains: {
             loading: false,
@@ -355,7 +324,7 @@ describe('useSafeWalletProvider', () => {
         send: mockSend,
       }))
 
-      const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
+      const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
 
       result.current?.proxy('eth_chainId', [])
 
@@ -373,7 +342,7 @@ describe('useSafeWalletProvider', () => {
       },
     } as unknown as router.NextRouter)
 
-    const { result } = renderHook(() => useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
+    const { result } = renderHook(() => _useTxFlowApi('1', '0x1234567890000000000000000000000000000000'))
 
     result.current?.showTxStatus('0x123')
 
@@ -383,36 +352,6 @@ describe('useSafeWalletProvider', () => {
         safe: '0x1234567890000000000000000000000000000000',
         id: '0x123',
       },
-    })
-  })
-
-  it('should create CreateCall lib transactions', () => {
-    const createCallDeployment = getCreateCallDeployment({ version: '1.3.0', network: '1' })
-    const createCallInterface = new Interface(['function performCreate(uint256,bytes)'])
-    const safeAddress = faker.finance.ethereumAddress()
-    const { result } = renderHook(() => useTxFlowApi('1', safeAddress), {
-      initialReduxState: {
-        safeInfo: {
-          loading: false,
-          error: undefined,
-          data: {
-            chainId: '1',
-            address: {
-              value: safeAddress,
-            },
-            deployed: true,
-            version: '1.3.0',
-          } as unknown as ExtendedSafeInfo,
-        },
-      },
-    })
-
-    const tx = result.current?.getCreateCallTransaction('0x1234')
-
-    expect(tx).toEqual({
-      to: createCallDeployment?.networkAddresses['1'],
-      value: '0',
-      data: createCallInterface.encodeFunctionData('performCreate', [0, '0x1234']),
     })
   })
 })

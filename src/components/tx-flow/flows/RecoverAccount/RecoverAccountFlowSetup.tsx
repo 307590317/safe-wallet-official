@@ -28,7 +28,6 @@ import type { RecoverAccountFlowProps } from '.'
 import type { AddressEx } from '@safe-global/safe-gateway-typescript-sdk'
 
 import commonCss from '@/components/tx-flow/common/styles.module.css'
-import { maybePlural } from '@/utils/formatters'
 
 export function _isSameSetup({
   oldOwners,
@@ -88,22 +87,11 @@ export function RecoverAccountFlowSetup({
       <form onSubmit={formMethods.handleSubmit(onSubmit)} className={commonCss.form}>
         <TxCard>
           <div>
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{
-                fontWeight: 700,
-              }}
-            >
+            <Typography variant="h6" fontWeight={700} gutterBottom>
               Add signer(s)
             </Typography>
 
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 1,
-              }}
-            >
+            <Typography variant="body2" mb={1}>
               Set the new signer wallet(s) of this Safe Account and how many need to confirm a transaction before it can
               be executed.
             </Typography>
@@ -132,15 +120,7 @@ export function RecoverAccountFlowSetup({
                   />
                 </Grid>
 
-                <Grid
-                  item
-                  xs={1}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+                <Grid item xs={1} display="flex" alignItems="center" justifyContent="center">
                   {index > 0 && (
                     <IconButton onClick={() => remove(index)}>
                       <SvgIcon component={DeleteIcon} inheritViewBox />
@@ -163,13 +143,7 @@ export function RecoverAccountFlowSetup({
           <Divider className={commonCss.nestedDivider} />
 
           <div>
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{
-                fontWeight: 700,
-              }}
-            >
+            <Typography variant="h6" fontWeight={700} gutterBottom>
               Threshold
               <Tooltip title={TOOLTIP_TITLES.THRESHOLD} arrow placement="top">
                 <span>
@@ -187,25 +161,12 @@ export function RecoverAccountFlowSetup({
               </Tooltip>
             </Typography>
 
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 1,
-              }}
-            >
+            <Typography variant="body2" mb={1}>
               After recovery, Safe Account transactions will require:
             </Typography>
           </div>
 
-          <Grid
-            container
-            direction="row"
-            sx={{
-              alignItems: 'center',
-              gap: 2,
-              mb: 1,
-            }}
-          >
+          <Grid container direction="row" alignItems="center" gap={2} mb={1}>
             <Grid item>
               <Controller
                 control={formMethods.control}
@@ -226,9 +187,7 @@ export function RecoverAccountFlowSetup({
             </Grid>
 
             <Grid item>
-              <Typography>
-                out of {fields.length} signer{maybePlural(fields)}
-              </Typography>
+              <Typography>out of {fields.length} signer(s)</Typography>
             </Grid>
           </Grid>
 

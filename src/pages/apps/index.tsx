@@ -3,7 +3,6 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo } from 'react'
 import debounce from 'lodash/debounce'
-import type { SafeAppData } from '@safe-global/safe-gateway-typescript-sdk'
 
 import { useSafeApps } from '@/hooks/safe-apps/useSafeApps'
 import SafeAppsSDKLink from '@/components/safe-apps/SafeAppsSDKLink'
@@ -14,20 +13,14 @@ import useSafeAppsFilters from '@/hooks/safe-apps/useSafeAppsFilters'
 import SafeAppsFilters from '@/components/safe-apps/SafeAppsFilters'
 import { useHasFeature } from '@/hooks/useChains'
 import { FEATURES } from '@/utils/chains'
-import { SAFE_APPS_LABELS } from '@/services/analytics'
 
 const SafeApps: NextPage = () => {
   const router = useRouter()
-  const { remoteSafeApps, remoteSafeAppsLoading, pinnedSafeApps, pinnedSafeAppIds } = useSafeApps()
+  const { remoteSafeApps, remoteSafeAppsLoading, pinnedSafeApps, pinnedSafeAppIds, togglePin } = useSafeApps()
   const { filteredApps, query, setQuery, setSelectedCategories, setOptimizedWithBatchFilter, selectedCategories } =
     useSafeAppsFilters(remoteSafeApps)
   const isFiltered = filteredApps.length !== remoteSafeApps.length
   const isSafeAppsEnabled = useHasFeature(FEATURES.SAFE_APPS)
-
-  const featuredSafeApps = useMemo(() => {
-    // TODO: Remove assertion after migrating to new SDK
-    return remoteSafeApps.filter((app) => (app as SafeAppData & { featured: boolean }).featured)
-  }, [remoteSafeApps])
 
   const nonPinnedApps = useMemo(
     () => remoteSafeApps.filter((app) => !pinnedSafeAppIds.has(app.id)),
@@ -50,7 +43,7 @@ const SafeApps: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{'Safe{Wallet} – Safe Apps'}</title>
+        <title>{'Bitlayer Safe – Safe Apps'}</title>
       </Head>
 
       <SafeAppsSDKLink />
@@ -73,30 +66,18 @@ const SafeApps: NextPage = () => {
             title="My pinned apps"
             safeAppsList={pinnedSafeApps}
             bookmarkedSafeAppsId={pinnedSafeAppIds}
-            eventLabel={SAFE_APPS_LABELS.apps_pinned}
-          />
-        )}
-
-        {/* Featured apps */}
-        {!isFiltered && featuredSafeApps.length > 0 && (
-          <SafeAppList
-            title="Featured apps"
-            safeAppsList={featuredSafeApps}
-            bookmarkedSafeAppsId={pinnedSafeAppIds}
-            eventLabel={SAFE_APPS_LABELS.apps_featured}
+            onBookmarkSafeApp={togglePin}
           />
         )}
 
         {/* All apps */}
         <SafeAppList
           title="All apps"
-          isFiltered={isFiltered}
           safeAppsList={isFiltered ? filteredApps : nonPinnedApps}
           safeAppsListLoading={remoteSafeAppsLoading}
           bookmarkedSafeAppsId={pinnedSafeAppIds}
-          eventLabel={SAFE_APPS_LABELS.apps_all}
+          onBookmarkSafeApp={togglePin}
           query={query}
-          showNativeSwapsCard
         />
       </main>
     </>

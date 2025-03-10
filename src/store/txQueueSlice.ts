@@ -8,8 +8,6 @@ import { PendingStatus, selectPendingTxs } from './pendingTxsSlice'
 import { sameAddress } from '@/utils/addresses'
 import { txDispatch, TxEvent } from '@/services/tx/txEvents'
 
-const SIGNING_STATES = [PendingStatus.SIGNING, PendingStatus.NESTED_SIGNING]
-
 const { slice, selector } = makeLoadableSlice('txQueue', undefined as TransactionListPage | undefined)
 
 export const txQueueSlice = slice
@@ -47,7 +45,12 @@ export const txQueueListener = (listenerMiddleware: typeof listenerMiddlewareIns
         const txId = result.transaction.id
 
         const pendingTx = pendingTxs[txId]
-        if (!pendingTx || !SIGNING_STATES.includes(pendingTx.status) || !('signerAddress' in pendingTx)) {
+        if (!pendingTx || pendingTx.status !== PendingStatus.SIGNING) {
+          continue
+        }
+
+        const awaitingSigner = pendingTx.signerAddress
+        if (!awaitingSigner) {
           continue
         }
 
@@ -55,10 +58,10 @@ export const txQueueListener = (listenerMiddleware: typeof listenerMiddlewareIns
         if (
           isMultisigExecutionInfo(result.transaction.executionInfo) &&
           !result.transaction.executionInfo.missingSigners?.some((address) =>
-            sameAddress(address.value, pendingTx.signerAddress),
+            sameAddress(address.value, awaitingSigner),
           )
         ) {
-          txDispatch(TxEvent.SIGNATURE_INDEXED, { txId })
+          txDispatch(TxEvent.SIGNATURE_INDEXED, { txId: txId })
         }
       }
     },

@@ -25,7 +25,7 @@ const WatchlistAddButton = () => {
       pathname: AppRoutes.newSafe.load,
       query: {
         chain: chain?.shortName,
-        address,
+        address: address,
       },
     })
   }
@@ -43,7 +43,7 @@ const WatchlistAddButton = () => {
             disableElevation
             sx={{ py: 1.3, px: 1 }}
           >
-            Remove account
+            Remove from watchlist
           </Button>
         </Track>
       ) : (
@@ -58,7 +58,7 @@ const WatchlistAddButton = () => {
             sx={{ py: 1.3 }}
             startIcon={<VisibilityOutlined sx={{ verticalAlign: 'middle', marginRight: 1 }} />}
           >
-            Add read-only
+            Add to watchlist
           </Button>
         </Track>
       )}

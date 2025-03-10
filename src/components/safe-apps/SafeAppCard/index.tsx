@@ -21,7 +21,7 @@ import css from './styles.module.css'
 
 type SafeAppCardProps = {
   safeApp: SafeAppData
-  onClickSafeApp?: (e: SyntheticEvent) => void
+  onClickSafeApp?: () => void
   isBookmarked?: boolean
   onBookmarkSafeApp?: (safeAppId: number) => void
   removeCustomApp?: (safeApp: SafeAppData) => void
@@ -66,7 +66,7 @@ export const getSafeAppUrl = (router: NextRouter, safeAppUrl: string) => {
 
 type SafeAppCardViewProps = {
   safeApp: SafeAppData
-  onClickSafeApp?: (e: SyntheticEvent) => void
+  onClickSafeApp?: () => void
   safeAppUrl: string
   isBookmarked?: boolean
   onBookmarkSafeApp?: (safeAppId: number) => void
@@ -84,7 +84,7 @@ const SafeAppCardGridView = ({
   openPreviewDrawer,
 }: SafeAppCardViewProps) => {
   return (
-    <SafeAppCardContainer safeAppUrl={safeAppUrl} onClickSafeApp={onClickSafeApp} height="100%">
+    <SafeAppCardContainer safeAppUrl={safeAppUrl} onClickSafeApp={onClickSafeApp} height={'100%'}>
       {/* Safe App Header */}
       <CardHeader
         className={css.safeAppHeader}
@@ -132,7 +132,7 @@ const SafeAppCardGridView = ({
 }
 
 type SafeAppCardContainerProps = {
-  onClickSafeApp?: (e: SyntheticEvent) => void
+  onClickSafeApp?: () => void
   safeAppUrl: string
   children: ReactNode
   height?: string
@@ -148,7 +148,8 @@ export const SafeAppCardContainer = ({
 }: SafeAppCardContainerProps) => {
   const handleClickSafeApp = (event: SyntheticEvent) => {
     if (onClickSafeApp) {
-      onClickSafeApp(event)
+      event.preventDefault()
+      onClickSafeApp()
     }
   }
 

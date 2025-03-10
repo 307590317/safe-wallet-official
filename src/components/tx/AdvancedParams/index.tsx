@@ -61,4 +61,4 @@ export default AdvancedParams
 
 export * from './useAdvancedParams'
 
-export * from './types'
+export * from './types.d'

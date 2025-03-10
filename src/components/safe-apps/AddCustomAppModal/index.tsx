@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useRouter } from 'next/router'
 import type { SubmitHandler } from 'react-hook-form'
 import { useForm } from 'react-hook-form'
 import {
@@ -51,6 +52,7 @@ const INVALID_URL_ERROR = 'The url is invalid'
 
 export const AddCustomAppModal = ({ open, onClose, onSave, safeAppsList }: Props) => {
   const currentChain = useCurrentChain()
+  const router = useRouter()
 
   const {
     register,
@@ -60,7 +62,7 @@ export const AddCustomAppModal = ({ open, onClose, onSave, safeAppsList }: Props
     reset,
   } = useForm<CustomAppFormData>({ defaultValues: { riskAcknowledgement: false }, mode: 'onChange' })
 
-  const onSubmit: SubmitHandler<CustomAppFormData> = () => {
+  const onSubmit: SubmitHandler<CustomAppFormData> = (_, __) => {
     if (safeApp) {
       onSave(safeApp)
       trackSafeAppEvent(SAFE_APPS_EVENTS.ADD_CUSTOM_APP, safeApp.url)
@@ -112,30 +114,14 @@ export const AddCustomAppModal = ({ open, onClose, onSave, safeAppsList }: Props
                 },
               })}
             />
-            <Box
-              sx={{
-                mt: 2,
-              }}
-            >
+            <Box mt={2}>
               {safeApp ? (
                 <>
                   <CustomApp safeApp={safeApp} shareUrl={isCustomAppInTheDefaultList ? shareSafeAppUrl : ''} />
                   {isCustomAppInTheDefaultList ? (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        mt: 2,
-                        alignItems: 'center',
-                      }}
-                    >
+                    <Box display="flex" mt={2} alignItems="center">
                       <CheckIcon color="success" />
-                      <Typography
-                        sx={{
-                          ml: 1,
-                        }}
-                      >
-                        This Safe App is already registered
-                      </Typography>
+                      <Typography ml={1}>This Safe App is already registered</Typography>
                     </Box>
                   ) : (
                     <>
@@ -166,13 +152,7 @@ export const AddCustomAppModal = ({ open, onClose, onSave, safeAppsList }: Props
 
           <div className={css.addCustomAppHelp}>
             <InfoOutlinedIcon className={css.addCustomAppHelpIcon} />
-            <Typography
-              sx={{
-                ml: 0.5,
-              }}
-            >
-              Learn more about building
-            </Typography>
+            <Typography ml={0.5}>Learn more about building</Typography>
             <ExternalLink className={css.addCustomAppHelpLink} href={HELP_LINK} fontWeight={700}>
               Safe Apps
             </ExternalLink>

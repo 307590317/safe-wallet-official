@@ -111,13 +111,7 @@ const AppActions = ({ wallet, onConnectWallet, chain, appUrl, app }: Props): Rea
         >
           {compatibleSafes.map(({ address, chainId, shortName }) => (
             <MenuItem key={`${chainId}:${address}`} value={address}>
-              <Grid
-                container
-                sx={{
-                  alignItems: 'center',
-                  gap: 1,
-                }}
-              >
+              <Grid container alignItems="center" gap={1}>
                 <SafeIcon address={address} />
 
                 <Grid item xs>
@@ -137,21 +131,14 @@ const AppActions = ({ wallet, onConnectWallet, chain, appUrl, app }: Props): Rea
 
   return (
     <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontWeight: 700,
-        height: CTA_HEIGHT,
-      }}
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="space-between"
+      fontWeight={700}
+      height={CTA_HEIGHT}
     >
-      <Typography
-        variant="h5"
-        sx={{
-          fontWeight: 700,
-        }}
-      >
+      <Typography variant="h5" fontWeight={700}>
         Use the App with your Safe Account
       </Typography>
       {body}

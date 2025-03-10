@@ -1,41 +1,41 @@
-import useIsExpiredSwap from '@/features/swap/hooks/useIsExpiredSwap'
-import React, { type ReactElement, useEffect } from 'react'
+import React, { useEffect, type ReactElement } from 'react'
 import type { TransactionDetails, TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
-import { Box, CircularProgress, Typography } from '@mui/material'
+import { getTransactionDetails, Operation } from '@safe-global/safe-gateway-typescript-sdk'
+import { Box, CircularProgress } from '@mui/material'
 
 import TxSigners from '@/components/transactions/TxSigners'
 import Summary from '@/components/transactions/TxDetails/Summary'
 import TxData from '@/components/transactions/TxDetails/TxData'
 import useChainId from '@/hooks/useChainId'
+import useAsync from '@/hooks/useAsync'
 import {
   isAwaitingExecution,
-  isOrderTxInfo,
   isModuleExecutionInfo,
   isMultiSendTxInfo,
   isMultisigDetailedExecutionInfo,
   isMultisigExecutionInfo,
-  isOpenSwapOrder,
   isTxQueued,
 } from '@/utils/transaction-guards'
 import { InfoDetails } from '@/components/transactions/InfoDetails'
-import NamedAddressInfo from '@/components/common/NamedAddressInfo'
+import EthHashInfo from '@/components/common/EthHashInfo'
 import css from './styles.module.css'
 import ErrorMessage from '@/components/tx/ErrorMessage'
 import TxShareLink from '../TxShareLink'
+import TxCheckLink from '../TxCheckLink'
 import { ErrorBoundary } from '@sentry/react'
 import ExecuteTxButton from '@/components/transactions/ExecuteTxButton'
 import SignTxButton from '@/components/transactions/SignTxButton'
 import RejectTxButton from '@/components/transactions/RejectTxButton'
-import { UnsignedWarning } from '@/components/transactions/Warning'
+import { DelegateCallWarning, UnsignedWarning } from '@/components/transactions/Warning'
 import Multisend from '@/components/transactions/TxDetails/TxData/DecodedData/Multisend'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import useIsPending from '@/hooks/useIsPending'
-import { isImitation, isTrustedTx } from '@/utils/transactions'
+import { isTrustedTx } from '@/utils/transactions'
 import { useHasFeature } from '@/hooks/useChains'
 import { FEATURES } from '@/utils/chains'
-import { useGetTransactionDetailsQuery } from '@/store/api/gateway'
-import { asError } from '@/services/exceptions/utils'
-import { POLLING_INTERVAL } from '@/config/constants'
+import type { SafeConfig } from '@/hooks/useLocalConfig';
+import { LOCAL_CONFIG_KEY, fetchConfig } from '@/hooks/useLocalConfig'
+import useLocalStorage from '@/services/local-storage/useLocalStorage'
 
 export const NOT_AVAILABLE = 'n/a'
 
@@ -52,31 +52,21 @@ const TxDetailsBlock = ({ txSummary, txDetails }: TxDetailsProps): ReactElement 
   const isUnsigned =
     isMultisigExecutionInfo(txSummary.executionInfo) && txSummary.executionInfo.confirmationsSubmitted === 0
 
-  const isTxFromProposer =
-    isMultisigDetailedExecutionInfo(txDetails.detailedExecutionInfo) &&
-    txDetails.detailedExecutionInfo.trusted &&
-    isUnsigned
-
   const isUntrusted =
-    isMultisigDetailedExecutionInfo(txDetails.detailedExecutionInfo) && !txDetails.detailedExecutionInfo.trusted
+    isMultisigDetailedExecutionInfo(txDetails.detailedExecutionInfo) &&
+    txDetails.detailedExecutionInfo.trusted === false
 
   // If we have no token list we always trust the transfer
   const isTrustedTransfer = !hasDefaultTokenlist || isTrustedTx(txSummary)
-  const isImitationTransaction = isImitation(txSummary)
+  
+  const safeHash = isMultisigDetailedExecutionInfo(txDetails.detailedExecutionInfo) ? txDetails.detailedExecutionInfo.safeTxHash : ''
+  const [localConfig,setLocalConfig]= useLocalStorage<SafeConfig>(LOCAL_CONFIG_KEY)
 
-  let proposer, safeTxHash, proposedByDelegate
-  if (isMultisigDetailedExecutionInfo(txDetails.detailedExecutionInfo)) {
-    proposer = txDetails.detailedExecutionInfo.proposer?.value
-    safeTxHash = txDetails.detailedExecutionInfo.safeTxHash
-    // @ts-expect-error TODO: Need to update the types from the new SDK
-    proposedByDelegate = txDetails.detailedExecutionInfo.proposedByDelegate
-  }
-
-  const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
-
-  // Module address, name and logoUri
-  const moduleAddress = isModuleExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.address : undefined
-  const moduleAddressInfo = moduleAddress ? txDetails.txData?.addressInfoIndex?.[moduleAddress.value] : undefined
+  useEffect(()=>{
+    if(!localConfig?.checkSafeHref){
+      fetchConfig(setLocalConfig)
+    }
+  },[])
 
   return (
     <>
@@ -84,22 +74,21 @@ const TxDetailsBlock = ({ txSummary, txDetails }: TxDetailsProps): ReactElement 
       <div className={`${css.details} ${isUnsigned ? css.noSigners : ''}`}>
         <div className={css.shareLink}>
           <TxShareLink id={txSummary.id} />
+          {safeHash &&  <TxCheckLink safeHash={safeHash} />}
         </div>
 
         <div className={css.txData}>
           <ErrorBoundary fallback={<div>Error parsing data</div>}>
-            <TxData txDetails={txDetails} trusted={isTrustedTransfer} imitation={isImitationTransaction} />
+            <TxData txDetails={txDetails} trusted={isTrustedTransfer} />
           </ErrorBoundary>
         </div>
 
         {/* Module information*/}
-        {moduleAddress && (
+        {isModuleExecutionInfo(txSummary.executionInfo) && (
           <div className={css.txModule}>
-            <InfoDetails title="Executed via module:">
-              <NamedAddressInfo
-                address={moduleAddress.value}
-                name={moduleAddressInfo?.name || moduleAddress.name}
-                customAvatar={moduleAddressInfo?.logoUri || moduleAddress.logoUri}
+            <InfoDetails title="Module:">
+              <EthHashInfo
+                address={txSummary.executionInfo.address.value}
                 shortAddress={false}
                 showCopyButton
                 hasExplorer
@@ -110,10 +99,16 @@ const TxDetailsBlock = ({ txSummary, txDetails }: TxDetailsProps): ReactElement 
 
         <div className={css.txSummary}>
           {isUntrusted && !isPending && <UnsignedWarning />}
+
+          {txDetails.txData?.operation === Operation.DELEGATE && (
+            <div className={css.delegateCall}>
+              <DelegateCallWarning showWarning={!txDetails.txData.trustedDelegateCallTarget} />
+            </div>
+          )}
           <Summary txDetails={txDetails} />
         </div>
 
-        {(isMultiSendTxInfo(txDetails.txInfo) || isOrderTxInfo(txDetails.txInfo)) && (
+        {isMultiSendTxInfo(txDetails.txInfo) && (
           <div className={css.multiSend}>
             <ErrorBoundary fallback={<div>Error parsing data</div>}>
               <Multisend txData={txDetails.txData} />
@@ -121,27 +116,17 @@ const TxDetailsBlock = ({ txSummary, txDetails }: TxDetailsProps): ReactElement 
           </div>
         )}
       </div>
+
       {/* Signers */}
-      {(!isUnsigned || isTxFromProposer) && (
+      {!isUnsigned && (
         <div className={css.txSigners}>
-          <TxSigners
-            txDetails={txDetails}
-            txSummary={txSummary}
-            isTxFromProposer={isTxFromProposer}
-            proposer={proposedByDelegate}
-          />
+          <TxSigners txDetails={txDetails} txSummary={txSummary} />
 
           {isQueue && (
             <Box className={css.buttons}>
               {awaitingExecution ? <ExecuteTxButton txSummary={txSummary} /> : <SignTxButton txSummary={txSummary} />}
-              <RejectTxButton txSummary={txSummary} safeTxHash={safeTxHash} proposer={proposer} />
+              <RejectTxButton txSummary={txSummary} />
             </Box>
-          )}
-
-          {isQueue && expiredSwap && (
-            <Typography color="text.secondary" mt={2}>
-              This order has expired. Reject this transaction and try again.
-            </Typography>
           )}
         </div>
       )}
@@ -159,22 +144,14 @@ const TxDetails = ({
   const chainId = useChainId()
   const { safe } = useSafeInfo()
 
-  const {
-    data: txDetailsData,
-    error,
-    isLoading: loading,
-    refetch,
-    isUninitialized,
-  } = useGetTransactionDetailsQuery(
-    { chainId, txId: txSummary.id },
-    {
-      pollingInterval: isOpenSwapOrder(txSummary.txInfo) ? POLLING_INTERVAL : undefined,
+  const [txDetailsData, error, loading] = useAsync<TransactionDetails>(
+    async () => {
+      return txDetails || getTransactionDetails(chainId, txSummary.id)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [txDetails, chainId, txSummary.id, safe.txQueuedTag],
+    false,
   )
-
-  useEffect(() => {
-    !isUninitialized && refetch()
-  }, [safe.txQueuedTag, refetch, txDetails, isUninitialized])
 
   return (
     <div className={css.container}>
@@ -187,7 +164,7 @@ const TxDetails = ({
       ) : (
         error && (
           <div className={css.error}>
-            <ErrorMessage error={asError(error)}>Couldn&apos;t load the transaction details</ErrorMessage>
+            <ErrorMessage error={error}>Couldn&apos;t load the transaction details</ErrorMessage>
           </div>
         )
       )}

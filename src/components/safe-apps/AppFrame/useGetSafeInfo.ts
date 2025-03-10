@@ -1,49 +1,28 @@
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 import useChainId from '@/hooks/useChainId'
 import { useCurrentChain } from '@/hooks/useChains'
 import useIsSafeOwner from '@/hooks/useIsSafeOwner'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { getLegacyChainName } from '../utils'
-import { useNestedSafeOwners } from '@/hooks/useNestedSafeOwners'
 
 const useGetSafeInfo = () => {
   const { safe, safeAddress } = useSafeInfo()
   const isOwner = useIsSafeOwner()
-  const nestedSafeOwners = useNestedSafeOwners()
   const chainId = useChainId()
   const chain = useCurrentChain()
   const chainName = chain?.chainName || ''
 
-  return useCallback(() => {
-    return {
+  return useMemo(
+    () => () => ({
       safeAddress,
       chainId: parseInt(chainId, 10),
       owners: safe.owners.map((owner) => owner.value),
       threshold: safe.threshold,
-      isReadOnly: !isOwner && (nestedSafeOwners == null || nestedSafeOwners.length === 0),
-      nonce: safe.nonce,
-      implementation: safe.implementation.value,
-      modules: safe.modules ? safe.modules.map((module) => module.value) : null,
-      fallbackHandler: safe.fallbackHandler ? safe.fallbackHandler?.value : null,
-      guard: safe.guard?.value || null,
-      version: safe.version,
+      isReadOnly: !isOwner,
       network: getLegacyChainName(chainName || '', chainId).toUpperCase(),
-    }
-  }, [
-    safeAddress,
-    chainId,
-    safe.owners,
-    safe.threshold,
-    safe.nonce,
-    safe.implementation.value,
-    safe.modules,
-    safe.fallbackHandler,
-    safe.guard?.value,
-    safe.version,
-    isOwner,
-    nestedSafeOwners,
-    chainName,
-  ])
+    }),
+    [chainId, chainName, isOwner, safeAddress, safe.owners, safe.threshold],
+  )
 }
 
 export default useGetSafeInfo

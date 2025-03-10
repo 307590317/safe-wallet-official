@@ -15,7 +15,7 @@ import { RemoveGuardFlow } from '@/components/tx-flow/flows'
 
 const NoTransactionGuard = () => {
   return (
-    <Typography mt={2} sx={{ color: ({ palette }) => palette.primary.light }}>
+    <Typography mt={2} color={({ palette }) => palette.primary.light}>
       No transaction guard set
     </Typography>
   )
@@ -26,7 +26,7 @@ const GuardDisplay = ({ guardAddress, chainId }: { guardAddress: string; chainId
 
   return (
     <Box className={css.guardDisplay}>
-      <EthHashInfo shortAddress={false} address={guardAddress} showCopyButton hasExplorer chainId={chainId} />
+      <EthHashInfo shortAddress={false} address={guardAddress} showCopyButton chainId={chainId} />
       <CheckWallet>
         {(isOk) => (
           <IconButton

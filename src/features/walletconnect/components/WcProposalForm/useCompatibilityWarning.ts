@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { AlertColor } from '@mui/material'
-import type { WalletKitTypes } from '@reown/walletkit'
+import type { Web3WalletTypes } from '@walletconnect/web3wallet'
 import useChains from '@/hooks/useChains'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { capitalize } from '@/utils/formatters'
@@ -17,7 +17,7 @@ const Warnings: Record<string, { severity: AlertColor; message: string }> = {
   },
   WARNED_BRIDGE: {
     severity: 'warning',
-    message: `While bridging via ${NAME_PLACEHOLDER}, please make sure that the desination address you send funds to matches the Safe address you have on the respective chain. Otherwise, the funds will be lost.`,
+    message: `While using ${NAME_PLACEHOLDER}, please make sure that the desination address you send funds to matches the Safe address you have on the respective chain. Otherwise, the funds will be lost.`,
   },
   UNSUPPORTED_CHAIN: {
     severity: 'error',
@@ -46,7 +46,7 @@ export const _getWarning = (origin: string, name: string, isUnsupportedChain: bo
 }
 
 export const useCompatibilityWarning = (
-  proposal: WalletKitTypes.SessionProposal,
+  proposal: Web3WalletTypes.SessionProposal,
   isUnsupportedChain: boolean,
 ): (typeof Warnings)[string] => {
   const { configs } = useChains()

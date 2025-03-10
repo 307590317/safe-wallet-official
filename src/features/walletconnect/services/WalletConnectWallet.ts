@@ -1,8 +1,9 @@
 import { Core } from '@walletconnect/core'
-import { WalletKit, type WalletKitTypes } from '@reown/walletkit'
+import { Web3Wallet } from '@walletconnect/web3wallet'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
-import type Web3WalletType from '@reown/walletkit'
-import type { ProposalTypes, SessionTypes } from '@walletconnect/types'
+import type Web3WalletType from '@walletconnect/web3wallet'
+import type { Web3WalletTypes } from '@walletconnect/web3wallet'
+import type { SessionTypes } from '@walletconnect/types'
 import { type JsonRpcResponse } from '@walletconnect/jsonrpc-utils'
 import uniq from 'lodash/uniq'
 
@@ -11,8 +12,8 @@ import { EIP155, SAFE_COMPATIBLE_EVENTS, SAFE_COMPATIBLE_METHODS, SAFE_WALLET_ME
 import { invariant } from '@/utils/helpers'
 import { getEip155ChainId, stripEip155Prefix } from './utils'
 
-const SESSION_ADD_EVENT = 'session_add' as WalletKitTypes.Event // Workaround: WalletConnect doesn't emit session_add event
-const SESSION_REJECT_EVENT = 'session_reject' as WalletKitTypes.Event // Workaround: WalletConnect doesn't emit session_reject event
+const SESSION_ADD_EVENT = 'session_add' as Web3WalletTypes.Event // Workaround: WalletConnect doesn't emit session_add event
+const SESSION_REJECT_EVENT = 'session_reject' as Web3WalletTypes.Event // Workaround: WalletConnect doesn't emit session_reject event
 
 function assertWeb3Wallet<T extends Web3WalletType | null>(web3Wallet: T): asserts web3Wallet {
   return invariant(web3Wallet, 'WalletConnect not initialized')
@@ -38,7 +39,7 @@ class WalletConnectWallet {
       customStoragePrefix: LS_NAMESPACE,
     })
 
-    const web3wallet = await WalletKit.init({
+    const web3wallet = await Web3Wallet.init({
       core,
       metadata: SAFE_WALLET_METADATA,
     })
@@ -80,11 +81,16 @@ class WalletConnectWallet {
     })
   }
 
-  private getNamespaces(proposal: WalletKitTypes.SessionProposal, currentChainId: string, safeAddress: string) {
-    // As workaround, we pretend to support all the required chains plus the current Safe's chain
+  private getNamespaces(proposal: Web3WalletTypes.SessionProposal, currentChainId: string, safeAddress: string) {
+    // Most dApps require mainnet, but we aren't always on mainnet
+    // As workaround, we pretend include all required and optional chains with the Safe chainId
     const requiredChains = proposal.params.requiredNamespaces[EIP155]?.chains || []
+    const optionalChains = proposal.params.optionalNamespaces[EIP155]?.chains || []
 
-    const supportedChainIds = [currentChainId].concat(requiredChains.map(stripEip155Prefix))
+    const supportedChainIds = [currentChainId].concat(
+      requiredChains.map(stripEip155Prefix),
+      optionalChains.map(stripEip155Prefix),
+    )
 
     const eip155ChainIds = supportedChainIds.map(getEip155ChainId)
     const eip155Accounts = eip155ChainIds.map((eip155ChainId) => `${eip155ChainId}:${safeAddress}`)
@@ -106,12 +112,7 @@ class WalletConnectWallet {
     })
   }
 
-  public async approveSession(
-    proposal: WalletKitTypes.SessionProposal,
-    currentChainId: string,
-    safeAddress: string,
-    sessionProperties?: ProposalTypes.SessionProperties,
-  ) {
+  public async approveSession(proposal: Web3WalletTypes.SessionProposal, currentChainId: string, safeAddress: string) {
     assertWeb3Wallet(this.web3Wallet)
 
     const namespaces = this.getNamespaces(proposal, currentChainId, safeAddress)
@@ -120,13 +121,11 @@ class WalletConnectWallet {
     const session = await this.web3Wallet.approveSession({
       id: proposal.id,
       namespaces,
-      sessionProperties,
     })
 
     await this.chainChanged(session.topic, currentChainId)
 
     // Workaround: WalletConnect doesn't have a session_add event
-    // and we want to update our state inside the useWalletConnectSessions hook
     this.web3Wallet?.events.emit(SESSION_ADD_EVENT, session)
 
     // Return updated session as it may have changed
@@ -181,7 +180,7 @@ class WalletConnectWallet {
     }
   }
 
-  public async rejectSession(proposal: WalletKitTypes.SessionProposal) {
+  public async rejectSession(proposal: Web3WalletTypes.SessionProposal) {
     assertWeb3Wallet(this.web3Wallet)
 
     await this.web3Wallet.rejectSession({
@@ -196,7 +195,7 @@ class WalletConnectWallet {
   /**
    * Subscribe to session proposals
    */
-  public onSessionPropose(handler: (e: WalletKitTypes.SessionProposal) => void) {
+  public onSessionPropose(handler: (e: Web3WalletTypes.SessionProposal) => void) {
     // Subscribe to the session proposal event
     this.web3Wallet?.on('session_proposal', handler)
 
@@ -209,7 +208,7 @@ class WalletConnectWallet {
   /**
    * Subscribe to session proposal rejections
    */
-  public onSessionReject(handler: (e: WalletKitTypes.SessionProposal) => void) {
+  public onSessionReject(handler: (e: Web3WalletTypes.SessionProposal) => void) {
     // @ts-expect-error - custom event payload
     this.web3Wallet?.on(SESSION_REJECT_EVENT, handler)
 
@@ -257,8 +256,7 @@ class WalletConnectWallet {
     })
 
     // Workaround: WalletConnect doesn't emit session_delete event when disconnecting from the wallet side
-    // and we want to update the state inside the useWalletConnectSessions hook
-    this.web3Wallet.events.emit('session_delete', session)
+    this.web3Wallet?.events.emit('session_delete', session)
   }
 
   /**
@@ -272,7 +270,7 @@ class WalletConnectWallet {
   /**
    * Subscribe to requests
    */
-  public onRequest(handler: (event: WalletKitTypes.SessionRequest) => void) {
+  public onRequest(handler: (event: Web3WalletTypes.SessionRequest) => void) {
     this.web3Wallet?.on('session_request', handler)
 
     return () => {

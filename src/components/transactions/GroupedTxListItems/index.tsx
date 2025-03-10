@@ -31,39 +31,21 @@ const TxGroup = ({ groupedListItems }: { groupedListItems: Transaction[] }): Rea
 
   return (
     <Paper className={css.container}>
-      <Typography
-        sx={{
-          gridArea: 'nonce',
-        }}
-      >
-        {nonce}
-      </Typography>
-      <Box
-        className={css.disclaimerContainer}
-        sx={{
-          gridArea: 'warning',
-        }}
-      >
+      <Typography gridArea="nonce">{nonce}</Typography>
+
+      <Box gridArea="warning" className={css.disclaimerContainer}>
         <Disclaimer />
       </Box>
-      <Box
-        className={css.line}
-        sx={{
-          gridArea: 'line',
-        }}
-      />
-      <Box
-        className={css.txItems}
-        sx={{
-          gridArea: 'items',
-        }}
-      >
+
+      <Box gridArea="line" className={css.line} />
+
+      <Box gridArea="items" className={css.txItems}>
         {groupedListItems.map((tx) => (
           <div
             key={tx.transaction.id}
             className={replacedTxIds.includes(tx.transaction.id) ? css.willBeReplaced : undefined}
           >
-            <ExpandableTransactionItem item={tx} isConflictGroup />
+            <ExpandableTransactionItem item={tx} isGrouped />
           </div>
         ))}
       </Box>

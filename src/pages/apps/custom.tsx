@@ -8,7 +8,6 @@ import SafeAppList from '@/components/safe-apps/SafeAppList'
 import SafeAppsSDKLink from '@/components/safe-apps/SafeAppsSDKLink'
 import { RemoveCustomAppModal } from '@/components/safe-apps/RemoveCustomAppModal'
 import type { SafeAppData } from '@safe-global/safe-gateway-typescript-sdk'
-import { SAFE_APPS_LABELS } from '@/services/analytics'
 
 const CustomSafeApps: NextPage = () => {
   // TODO: create a custom hook instead of use useSafeApps
@@ -30,7 +29,7 @@ const CustomSafeApps: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{'Safe{Wallet} – Custom Safe Apps'}</title>
+        <title>{'Bitlayer Safe – Custom Safe Apps'}</title>
       </Head>
 
       <SafeAppsSDKLink />
@@ -43,7 +42,6 @@ const CustomSafeApps: NextPage = () => {
           safeAppsList={customSafeApps}
           addCustomApp={addCustomApp}
           removeCustomApp={openRemoveCustomAppModal}
-          eventLabel={SAFE_APPS_LABELS.apps_custom}
         />
       </main>
 

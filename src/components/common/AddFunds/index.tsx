@@ -16,27 +16,11 @@ const AddFundsCTA = () => {
   const qrCode = `${qrPrefix}${safeAddress}`
 
   return (
-    <Paper data-testid="add-funds-section">
-      <Grid
-        container
-        sx={{
-          gap: 3,
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: 4,
-        }}
-      >
+    <Paper>
+      <Grid container gap={3} alignItems="center" justifyContent="center" p={4}>
         <Grid item>
           <div>
-            <Box
-              sx={{
-                p: 2,
-                border: '1px solid',
-                borderColor: 'border.light',
-                borderRadius: 1,
-                display: 'inline-block',
-              }}
-            >
+            <Box p={2} border="1px solid" borderColor="border.light" borderRadius={1} display="inline-block">
               <QRCode value={qrCode} size={195} />
             </Box>
           </div>
@@ -49,22 +33,8 @@ const AddFundsCTA = () => {
           />
         </Grid>
 
-        <Grid
-          item
-          container
-          xs={12}
-          md={6}
-          sx={{
-            gap: 2,
-            flexDirection: 'column',
-          }}
-        >
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 'bold',
-            }}
-          >
+        <Grid item container xs={12} md={6} gap={2} flexDirection="column">
+          <Typography variant="h3" fontWeight="bold">
             Add funds to get started
           </Typography>
 
@@ -72,23 +42,11 @@ const AddFundsCTA = () => {
             Add funds directly from your bank account or copy your address to send tokens from a different account.
           </Typography>
 
-          <Box
-            sx={{
-              bgcolor: 'background.main',
-              p: 2,
-              borderRadius: '6px',
-              alignSelf: 'flex-start',
-              fontSize: '14px',
-            }}
-          >
+          <Box bgcolor="background.main" p={2} borderRadius="6px" alignSelf="flex-start" fontSize="14px">
             <EthHashInfo address={safeAddress} shortAddress={false} showCopyButton hasExplorer avatarSize={24} />
           </Box>
 
-          <Box
-            sx={{
-              alignSelf: 'flex-start',
-            }}
-          >
+          <Box alignSelf="flex-start">
             <BuyCryptoButton />
           </Box>
         </Grid>

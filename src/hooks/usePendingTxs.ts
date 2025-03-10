@@ -2,25 +2,19 @@ import { useMemo } from 'react'
 import {
   type TransactionListPage,
   type TransactionSummary,
-  LabelValue,
+  type LabelValue,
   getTransactionQueue,
 } from '@safe-global/safe-gateway-typescript-sdk'
 import { useAppSelector } from '@/store'
 import { selectPendingTxIdsBySafe } from '@/store/pendingTxsSlice'
 import useAsync from './useAsync'
-import {
-  isConflictHeaderListItem,
-  isLabelListItem,
-  isMultisigExecutionInfo,
-  isTransactionListItem,
-} from '@/utils/transaction-guards'
+import { isLabelListItem, isTransactionListItem } from '@/utils/transaction-guards'
 import useSafeInfo from './useSafeInfo'
-import { shallowEqual } from 'react-redux'
 
 const usePendingTxIds = (): Array<TransactionSummary['id']> => {
   const { safe, safeAddress } = useSafeInfo()
   const { chainId } = safe
-  return useAppSelector((state) => selectPendingTxIdsBySafe(state, chainId, safeAddress), shallowEqual)
+  return useAppSelector((state) => selectPendingTxIdsBySafe(state, chainId, safeAddress))
 }
 
 export const useHasPendingTxs = (): boolean => {
@@ -37,38 +31,6 @@ export const useShowUnsignedQueue = (): boolean => {
   return safe.threshold === 1 && hasPending
 }
 
-export const filterUntrustedQueue = (
-  untrustedQueue: TransactionListPage,
-  pendingIds: Array<TransactionSummary['id']>,
-) => {
-  // Only keep labels and pending unsigned transactions
-  const results = untrustedQueue.results
-    .filter((item) => !isTransactionListItem(item) || pendingIds.includes(item.transaction.id))
-    .filter((item) => !isConflictHeaderListItem(item))
-    .filter(
-      (item) =>
-        !isTransactionListItem(item) ||
-        (isTransactionListItem(item) &&
-          isMultisigExecutionInfo(item.transaction.executionInfo) &&
-          item.transaction.executionInfo.confirmationsSubmitted === 0),
-    )
-
-  // Adjust the first label ("Next" -> "Pending")
-  if (results[0] && isLabelListItem(results[0])) {
-    results[0].label = 'Pending' as LabelValue
-  }
-
-  const transactions = results.filter((item) => isTransactionListItem(item))
-
-  return transactions.length ? { results } : undefined
-}
-
-export function getNextTransactions(queue: TransactionListPage): TransactionListPage {
-  const queueLabelIndex = queue.results.findIndex((item) => isLabelListItem(item) && item.label === LabelValue.Queued)
-  const nextTransactions = queueLabelIndex === -1 ? queue.results : queue.results.slice(0, queueLabelIndex)
-  return { results: nextTransactions }
-}
-
 export const usePendingTxsQueue = (): {
   page?: TransactionListPage
   error?: string
@@ -79,21 +41,31 @@ export const usePendingTxsQueue = (): {
   const pendingIds = usePendingTxIds()
   const hasPending = pendingIds.length > 0
 
-  const [untrustedNext, error, loading] = useAsync<TransactionListPage | undefined>(
-    async () => {
+  const [untrustedQueue, error, loading] = useAsync<TransactionListPage>(
+    () => {
       if (!hasPending) return
-      const untrustedQueue = await getTransactionQueue(chainId, safeAddress, { trusted: false })
-      return getNextTransactions(untrustedQueue)
+      return getTransactionQueue(chainId, safeAddress, { trusted: false })
     },
     [chainId, safeAddress, hasPending],
     false,
   )
 
   const pendingTxPage = useMemo(() => {
-    if (!untrustedNext || !pendingIds.length) return
+    if (!untrustedQueue || !pendingIds.length) return
 
-    return filterUntrustedQueue(untrustedNext, pendingIds)
-  }, [untrustedNext, pendingIds])
+    // Find the pending txs in the "untrusted" queue by id
+    // Keep labels too
+    const results = untrustedQueue.results.filter(
+      (item) => !isTransactionListItem(item) || pendingIds.includes(item.transaction.id),
+    )
+
+    // Adjust the first label ("Next" -> "Pending")
+    if (results[0] && isLabelListItem(results[0])) {
+      results[0].label = 'Pending' as LabelValue
+    }
+
+    return results.length ? { results } : undefined
+  }, [untrustedQueue, pendingIds])
 
   return useMemo(
     () => ({

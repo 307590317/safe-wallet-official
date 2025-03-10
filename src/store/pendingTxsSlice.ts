@@ -2,85 +2,25 @@ import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolki
 
 import type { RootState } from '@/store'
 import { sameAddress } from '@/utils/addresses'
-import { selectChainIdAndSafeAddress } from '@/store/common'
 
 export enum PendingStatus {
   SIGNING = 'SIGNING',
-  NESTED_SIGNING = 'NESTED_SIGNING',
   SUBMITTING = 'SUBMITTING',
   PROCESSING = 'PROCESSING',
   RELAYING = 'RELAYING',
   INDEXING = 'INDEXING',
 }
 
-export enum PendingTxType {
-  CUSTOM_TX = 'CUSTOM',
-  SAFE_TX = 'SAFE_TX',
-}
-
-export type PendingTxCommonProps = {
+export type PendingTx = {
   chainId: string
   safeAddress: string
-  nonce: number
-  groupKey?: string
-}
-
-type PendingSigningTx = PendingTxCommonProps & {
-  status: PendingStatus.SIGNING
-  signerAddress: string
-}
-
-type PendingSubmittingTx = PendingTxCommonProps & {
-  status: PendingStatus.SUBMITTING
-}
-
-export type PendingProcessingTx = PendingTxCommonProps &
-  (
-    | {
-        txHash: string
-        submittedAt: number
-        signerNonce: number
-        signerAddress: string
-        gasLimit?: string | number | undefined
-        status: PendingStatus.PROCESSING
-        txType: PendingTxType.SAFE_TX
-      }
-    | {
-        txHash: string
-        submittedAt: number
-        signerNonce: number
-        signerAddress: string
-        gasLimit?: string | number | undefined
-        data: string
-        to: string
-        status: PendingStatus.PROCESSING
-        txType: PendingTxType.CUSTOM_TX
-      }
-  )
-
-type PendingRelayingTx = PendingTxCommonProps & {
-  taskId: string
-  status: PendingStatus.RELAYING
-}
-
-type PendingIndexingTx = PendingTxCommonProps & {
-  status: PendingStatus.INDEXING
+  status: PendingStatus
   txHash?: string
+  groupKey?: string
+  signerAddress?: string
+  taskId?: string
+  submittedAt?: number
 }
-
-type PendingNestedSigningTx = PendingTxCommonProps & {
-  signerAddress: string
-  txHashOrParentSafeTxHash: string
-  status: PendingStatus.NESTED_SIGNING
-}
-
-export type PendingTx =
-  | PendingSigningTx
-  | PendingSubmittingTx
-  | PendingProcessingTx
-  | PendingRelayingTx
-  | PendingIndexingTx
-  | PendingNestedSigningTx
 
 export type PendingTxsState = {
   [txId: string]: PendingTx
@@ -114,10 +54,9 @@ export const selectPendingTxById = createSelector(
 )
 
 export const selectPendingTxIdsBySafe = createSelector(
-  [selectPendingTxs, selectChainIdAndSafeAddress],
-  (pendingTxs, [chainId, safeAddress]) => {
-    return Object.keys(pendingTxs).filter(
+  [selectPendingTxs, (_: RootState, chainId: string, safeAddress: string) => [chainId, safeAddress]],
+  (pendingTxs, [chainId, safeAddress]) =>
+    Object.keys(pendingTxs).filter(
       (id) => pendingTxs[id].chainId === chainId && sameAddress(pendingTxs[id].safeAddress, safeAddress),
-    )
-  },
+    ),
 )

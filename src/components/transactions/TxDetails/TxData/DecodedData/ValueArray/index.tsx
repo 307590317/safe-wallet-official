@@ -35,26 +35,24 @@ export const Value = ({ type, value, ...props }: ValueArrayProps): ReactElement 
     return (
       <Typography component="div" variant="body2">
         [
-        {parsedValue.length > 0 && (
-          <div className={css.nestedWrapper}>
-            {parsedValue.map((address, index) => {
-              const key = `${props.key || props.method}-${index}`
-              if (Array.isArray(address)) {
-                const newProps = {
-                  type,
-                  ...props,
-                  value: address,
-                }
-                return <Value key={key} {...newProps} />
+        <div className={css.nestedWrapper}>
+          {parsedValue.map((address, index) => {
+            const key = `${props.key || props.method}-${index}`
+            if (Array.isArray(address)) {
+              const newProps = {
+                type,
+                ...props,
+                value: address,
               }
-              return (
-                <div key={`${address}_${key}`}>
-                  <EthHashInfo address={address} showAvatar={false} shortAddress={false} showCopyButton hasExplorer />
-                </div>
-              )
-            })}
-          </div>
-        )}
+              return <Value key={key} {...newProps} />
+            }
+            return (
+              <div key={`${address}_${key}`}>
+                <EthHashInfo address={address} showAvatar={false} shortAddress={false} showCopyButton hasExplorer />
+              </div>
+            )
+          })}
+        </div>
         ]
       </Typography>
     )
@@ -64,7 +62,7 @@ export const Value = ({ type, value, ...props }: ValueArrayProps): ReactElement 
 }
 
 const getTextValue = (value: string, key?: string) => {
-  return <HexEncodedData highlightFirstBytes={false} limit={60} hexData={value} key={key} />
+  return <HexEncodedData limit={60} hexData={value} key={key} />
 }
 
 const getArrayValue = (parentId: string, value: string[], separator?: boolean) => (

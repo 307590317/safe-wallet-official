@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { renderHook } from '@testing-library/react'
-import { act } from 'react'
+import { renderHook, act } from '@testing-library/react'
 import useDebounce from '../useDebounce'
 
 const useTestHook = (): string => {

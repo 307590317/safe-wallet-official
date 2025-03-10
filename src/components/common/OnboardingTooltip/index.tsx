@@ -33,15 +33,14 @@ export const OnboardingTooltip = ({
     <Tooltip
       PopperProps={{
         className,
-        disablePortal: true,
       }}
       open
       placement={placement}
       arrow
       title={
-        <Box display="flex" alignItems="center" gap={1} p={1}>
+        <Box display="flex" alignItems="center" gap={1} padding={1}>
           <SvgIcon component={InfoIcon} inheritViewBox fontSize="small" />
-          <div style={{ minWidth: '150px' }}>{text}</div>
+          <span>{text}</span>
           <Button
             size="small"
             color={isDarkMode ? 'background' : 'secondary'}

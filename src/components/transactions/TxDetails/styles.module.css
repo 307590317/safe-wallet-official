@@ -15,6 +15,12 @@
   position: absolute;
   right: 16px;
   top: 16px;
+  display: flex;
+  gap: 6px;
+}
+
+.details .noSigners {
+  width: 100%;
 }
 
 .loading,
@@ -23,7 +29,7 @@
 .txSummary,
 .advancedDetails,
 .txModule {
-  padding: var(--space-2);
+  padding: 20px 24px;
 }
 
 .txData {
@@ -49,7 +55,7 @@
 }
 
 .multiSend {
-  border-bottom: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--color-border-light);
 }
 
 .buttons {
@@ -59,14 +65,6 @@
   justify-content: center;
   gap: var(--space-1);
   margin-top: var(--space-2);
-}
-
-.buttons > * {
-  flex: 1;
-}
-
-.buttons button {
-  width: 100%;
 }
 
 @media (max-width: 599.95px) {

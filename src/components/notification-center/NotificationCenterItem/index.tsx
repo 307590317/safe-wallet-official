@@ -49,15 +49,7 @@ const NotificationCenterItem = ({
 
   const primaryText = (
     <>
-      {title && (
-        <Typography
-          sx={{
-            fontWeight: '700',
-          }}
-        >
-          {title}
-        </Typography>
-      )}
+      {title && <Typography fontWeight="700">{title}</Typography>}
       <Typography>{message}</Typography>
     </>
   )

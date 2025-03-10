@@ -1,6 +1,7 @@
 export * from './addressBook'
 export * from './assets'
 export * from './createLoadSafe'
+export * from './mobileAppPromotion'
 export * from './modals'
 export * from './overview'
 export * from './safeApps'

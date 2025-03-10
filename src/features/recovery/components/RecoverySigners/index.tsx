@@ -8,6 +8,7 @@ import { Countdown } from '@/components/common/Countdown'
 import { ExecuteRecoveryButton } from '../ExecuteRecoveryButton'
 import { CancelRecoveryButton } from '../CancelRecoveryButton'
 import { useRecoveryTxState } from '@/features/recovery/hooks/useRecoveryTxState'
+import { RecoveryValidationErrors } from '../RecoveryValidationErrors'
 import { formatDateTime } from '@/utils/date'
 import type { RecoveryQueueItem } from '@/features/recovery/services/recovery-state'
 
@@ -20,13 +21,7 @@ export function RecoverySigners({ item }: { item: RecoveryQueueItem }): ReactEle
     item.expiresAt !== null ? (
       <>
         The recovery proposal can be executed{' '}
-        <Typography
-          sx={{
-            color: 'primary.main',
-          }}
-        >
-          until {formatDateTime(Number(item.expiresAt))}.
-        </Typography>
+        <Typography color="primary.main">until {formatDateTime(Number(item.expiresAt))}.</Typography>
       </>
     ) : (
       'The recovery proposal can be executed now.'
@@ -68,20 +63,16 @@ export function RecoverySigners({ item }: { item: RecoveryQueueItem }): ReactEle
           <ListItemText primaryTypographyProps={{ fontWeight: 700 }}>Can be executed</ListItemText>
         </ListItem>
       </List>
+
       <Box className={txSignersCss.listFooter}>
         <Typography sx={({ palette }) => ({ color: palette.border.main, mb: 1 })}>{desc}</Typography>
 
         {isNext && <Countdown seconds={remainingSeconds} />}
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-          mt: 2,
-        }}
-      >
+
+      <RecoveryValidationErrors item={item} />
+
+      <Box display="flex" alignItems="center" justifyContent="center" gap={1} mt={2}>
         <ExecuteRecoveryButton recovery={item} />
         <CancelRecoveryButton recovery={item} />
       </Box>

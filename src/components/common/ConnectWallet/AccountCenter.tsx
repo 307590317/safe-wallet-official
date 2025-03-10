@@ -35,7 +35,7 @@ export const AccountCenter = ({ wallet }: { wallet: ConnectedWallet }) => {
         <Box className={css.buttonContainer}>
           <WalletOverview wallet={wallet} balance={balance} showBalance />
 
-          <Box display="flex" alignItems="center" justifyContent="flex-end" ml="auto">
+          <Box display="flex" alignItems="center" justifyContent="flex-end" marginLeft="auto">
             {open ? <ExpandLessIcon color="border" /> : <ExpandMoreIcon color="border" />}
           </Box>
         </Box>

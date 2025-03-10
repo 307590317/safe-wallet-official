@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import { type ReactElement } from 'react'
 import { Alert, SvgIcon, Tooltip } from '@mui/material'
 import type { AlertColor } from '@mui/material'
 
@@ -6,28 +6,32 @@ import InfoOutlinedIcon from '@/public/images/notifications/info.svg'
 import css from './styles.module.css'
 import ExternalLink from '@/components/common/ExternalLink'
 import { HelpCenterArticle } from '@/config/constants'
-import { maybePlural } from '@/utils/formatters'
+import classNames from 'classnames'
 
 const Warning = ({
   datatestid,
   title,
   text,
   severity,
+  className = '',
+  svgClass = ''
 }: {
   datatestid?: String
   title: string | ReactElement
   text: string
-  severity: AlertColor
+  severity: AlertColor,
+  className?: string,
+  svgClass?: string,
 }): ReactElement => {
   return (
     <Tooltip data-testid={datatestid} title={title} placement="top-start" arrow>
       <Alert
-        className={css.alert}
-        sx={{ borderLeft: ({ palette }) => `3px solid ${palette[severity].main} !important`, alignItems: 'center' }}
+        className={classNames(css.alert, className)}
+        sx={{ borderLeft: ({ palette }) => `3px solid ${palette[severity].main} !important` }}
         severity={severity}
-        icon={<SvgIcon component={InfoOutlinedIcon} inheritViewBox color={severity} />}
+        icon={<SvgIcon className={svgClass} component={InfoOutlinedIcon} inheritViewBox color={severity} />}
       >
-        <b>{text}</b>
+        {text}
       </Alert>
     </Tooltip>
   )
@@ -35,8 +39,11 @@ const Warning = ({
 
 export const DelegateCallWarning = ({ showWarning }: { showWarning: boolean }): ReactElement => {
   const severity = showWarning ? 'warning' : 'success'
+  
   return (
     <Warning
+     className={css.delegateCall}
+     svgClass={css.svgIcon}
       datatestid="delegate-call-warning"
       title={
         <>
@@ -55,8 +62,20 @@ export const DelegateCallWarning = ({ showWarning }: { showWarning: boolean }): 
   )
 }
 
+export const MaintenanceWarning = ({ notice }:{ notice:string }): ReactElement => {
+
+  return <Warning
+    title={''}
+    className={css.maintenance}
+    svgClass={css.maintenanceSvgIcon}
+    datatestid="maintenance-warning"
+    severity="warning"
+    text={notice || ''}
+  />
+}
+
 export const ApprovalWarning = ({ approvalTxCount }: { approvalTxCount: number }): ReactElement => (
-  <Warning title="" severity="warning" text={`${approvalTxCount} ERC20 approval${maybePlural(approvalTxCount)}`} />
+  <Warning title="" severity="warning" text={`${approvalTxCount} ERC20 approval${approvalTxCount > 1 ? 's' : ''}`} />
 )
 
 export const ThresholdWarning = (): ReactElement => (

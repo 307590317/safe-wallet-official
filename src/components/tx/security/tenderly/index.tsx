@@ -1,10 +1,9 @@
-import useIsSafeOwner from '@/hooks/useIsSafeOwner'
 import { Alert, Button, Paper, SvgIcon, Tooltip, Typography } from '@mui/material'
 import { useContext, useEffect } from 'react'
 import type { ReactElement } from 'react'
 
 import useSafeInfo from '@/hooks/useSafeInfo'
-import { useSigner } from '@/hooks/wallets/useWallet'
+import useWallet from '@/hooks/wallets/useWallet'
 import CheckIcon from '@/public/images/common/check.svg'
 import CloseIcon from '@/public/images/common/close.svg'
 import { useDarkMode } from '@/hooks/useDarkMode'
@@ -34,8 +33,7 @@ export type TxSimulationProps = {
 // TODO: Test this component
 const TxSimulationBlock = ({ transactions, disabled, gasLimit, executionOwner }: TxSimulationProps): ReactElement => {
   const { safe } = useSafeInfo()
-  const signer = useSigner()
-  const isSafeOwner = useIsSafeOwner()
+  const wallet = useWallet()
   const isDarkMode = useDarkMode()
   const { safeTx } = useContext(SafeTxContext)
   const {
@@ -44,14 +42,13 @@ const TxSimulationBlock = ({ transactions, disabled, gasLimit, executionOwner }:
   } = useContext(TxInfoContext)
 
   const handleSimulation = async () => {
-    if (!signer) {
+    if (!wallet) {
       return
     }
 
     simulateTransaction({
       safe,
-      // fall back to the first owner of the safe in case the transaction is created by a proposer
-      executionOwner: (executionOwner ?? isSafeOwner) ? signer.address : safe.owners[0].value,
+      executionOwner: executionOwner ?? wallet.address,
       transactions,
       gasLimit,
     } as SimulationTxParams)
@@ -107,25 +104,12 @@ const TxSimulationBlock = ({ transactions, disabled, gasLimit, executionOwner }:
           />
         ) : isFinished ? (
           !isSuccess || isError || isCallTraceError ? (
-            <Typography
-              variant="body2"
-              className={sharedCss.result}
-              sx={{
-                color: 'error.main',
-              }}
-            >
+            <Typography variant="body2" color="error.main" className={sharedCss.result}>
               <SvgIcon component={CloseIcon} inheritViewBox fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
               Error
             </Typography>
           ) : (
-            <Typography
-              data-testid="simulation-success-msg"
-              variant="body2"
-              className={sharedCss.result}
-              sx={{
-                color: 'success.main',
-              }}
-            >
+            <Typography variant="body2" color="success.main" className={sharedCss.result}>
               <SvgIcon component={CheckIcon} inheritViewBox fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
               Success
             </Typography>
@@ -133,7 +117,6 @@ const TxSimulationBlock = ({ transactions, disabled, gasLimit, executionOwner }:
         ) : (
           <Track {...MODALS_EVENTS.SIMULATE_TX}>
             <Button
-              data-testid="simulate-btn"
               variant="outlined"
               size="small"
               className={css.simulate}

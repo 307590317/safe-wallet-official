@@ -9,6 +9,7 @@ import SetNameStep from '@/components/new-safe/create/steps/SetNameStep'
 import OwnerPolicyStep from '@/components/new-safe/create/steps/OwnerPolicyStep'
 import ReviewStep from '@/components/new-safe/create/steps/ReviewStep'
 import { CreateSafeStatus } from '@/components/new-safe/create/steps/StatusStep'
+import useAddressBook from '@/hooks/useAddressBook'
 import { CardStepper } from '@/components/new-safe/CardStepper'
 import { AppRoutes } from '@/config/routes'
 import { CREATE_SAFE_CATEGORY } from '@/services/analytics'
@@ -18,21 +19,16 @@ import CreateSafeInfos from '@/components/new-safe/create/CreateSafeInfos'
 import { type ReactElement, useMemo, useState } from 'react'
 import ExternalLink from '@/components/common/ExternalLink'
 import { HelpCenterArticle } from '@/config/constants'
-import { type SafeVersion } from '@safe-global/safe-core-sdk-types'
-import { getLatestSafeVersion } from '@/utils/chains'
-import { useCurrentChain } from '@/hooks/useChains'
-import type { ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { isSocialLoginWallet } from '@/services/mpc/SocialLoginModule'
+import { useMnemonicSafeName } from '@/hooks/useMnemonicName'
 
 export type NewSafeFormData = {
   name: string
-  networks: ChainInfo[]
   threshold: number
   owners: NamedAddress[]
-  saltNonce?: number
-  safeVersion: SafeVersion
+  saltNonce: number
   safeAddress?: string
   willRelay?: boolean
-  paymentReceiver?: string
 }
 
 const staticHints: Record<
@@ -104,28 +100,23 @@ const staticHints: Record<
 const CreateSafe = () => {
   const router = useRouter()
   const wallet = useWallet()
-  const chain = useCurrentChain()
+  const addressBook = useAddressBook()
+  const defaultOwnerAddressBookName = wallet?.address ? addressBook[wallet.address] : undefined
+  const defaultOwner: NamedAddress = {
+    name: defaultOwnerAddressBookName || wallet?.ens || '',
+    address: wallet?.address || '',
+  }
 
   const [safeName, setSafeName] = useState('')
-  const [overviewNetworks, setOverviewNetworks] = useState<ChainInfo[]>()
-
   const [dynamicHint, setDynamicHint] = useState<CreateSafeInfoItem>()
   const [activeStep, setActiveStep] = useState(0)
 
   const CreateSafeSteps: TxStepperProps<NewSafeFormData>['steps'] = [
     {
-      title: 'Set up the basics',
-      subtitle: 'Give a name to your account and select which networks to deploy it on.',
+      title: 'Select network and name of your Safe Account',
+      subtitle: 'Select the network on which to create your Safe Account',
       render: (data, onSubmit, onBack, setStep) => (
-        <SetNameStep
-          setOverviewNetworks={setOverviewNetworks}
-          setDynamicHint={setDynamicHint}
-          setSafeName={setSafeName}
-          data={data}
-          onSubmit={onSubmit}
-          onBack={onBack}
-          setStep={setStep}
-        />
+        <SetNameStep setSafeName={setSafeName} data={data} onSubmit={onSubmit} onBack={onBack} setStep={setStep} />
       ),
     },
     {
@@ -153,14 +144,13 @@ const CreateSafe = () => {
     {
       title: '',
       subtitle: '',
-      render: (data, onSubmit, onBack, setStep, setProgressColor, setStepData) => (
+      render: (data, onSubmit, onBack, setStep, setProgressColor) => (
         <CreateSafeStatus
           data={data}
           onSubmit={onSubmit}
           onBack={onBack}
           setStep={setStep}
           setProgressColor={setProgressColor}
-          setStepData={setStepData}
         />
       ),
     },
@@ -168,13 +158,17 @@ const CreateSafe = () => {
 
   const staticHint = useMemo(() => staticHints[activeStep], [activeStep])
 
-  const initialStep = 0
+  const mnemonicSafeName = useMnemonicSafeName()
+
+  // Jump to review screen when using social login
+  const isSocialLogin = isSocialLoginWallet(wallet?.label)
+  const initialStep = isSocialLogin ? 2 : 0
+
   const initialData: NewSafeFormData = {
-    name: '',
-    networks: [],
-    owners: [],
+    name: isSocialLogin ? mnemonicSafeName : '',
+    owners: [defaultOwner],
     threshold: 1,
-    safeVersion: getLatestSafeVersion(chain) as SafeVersion,
+    saltNonce: Date.now(),
   }
 
   const onClose = () => {
@@ -183,32 +177,13 @@ const CreateSafe = () => {
 
   return (
     <Container>
-      <Grid
-        container
-        columnSpacing={3}
-        sx={{
-          justifyContent: 'center',
-          mt: [2, null, 7],
-        }}
-      >
+      <Grid container columnSpacing={3} justifyContent="center" mt={[2, null, 7]}>
         <Grid item xs={12}>
-          <Typography
-            variant="h2"
-            sx={{
-              pb: 2,
-            }}
-          >
+          <Typography variant="h2" pb={2}>
             Create new Safe Account
           </Typography>
         </Grid>
-        <Grid
-          item
-          xs={12}
-          md={8}
-          sx={{
-            order: [1, null, 0],
-          }}
-        >
+        <Grid item xs={12} md={8} order={[1, null, 0]}>
           <CardStepper
             initialData={initialData}
             initialStep={initialStep}
@@ -219,17 +194,9 @@ const CreateSafe = () => {
           />
         </Grid>
 
-        <Grid
-          item
-          xs={12}
-          md={4}
-          sx={{
-            mb: [3, null, 0],
-            order: [0, null, 1],
-          }}
-        >
+        <Grid item xs={12} md={4} mb={[3, null, 0]} order={[0, null, 1]}>
           <Grid container spacing={3}>
-            {activeStep < 2 && <OverviewWidget safeName={safeName} networks={overviewNetworks || []} />}
+            {activeStep < 2 && <OverviewWidget safeName={safeName} />}
             {wallet?.address && <CreateSafeInfos staticHint={staticHint} dynamicHint={dynamicHint} />}
           </Grid>
         </Grid>

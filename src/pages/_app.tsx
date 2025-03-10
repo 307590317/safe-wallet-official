@@ -1,4 +1,6 @@
 import { SentryErrorBoundary } from '@/services/sentry' // needs to be imported first
+import useRehydrateSocialWallet from '@/hooks/wallets/mpc/useRehydrateSocialWallet'
+import PasswordRecoveryModal from '@/services/mpc/PasswordRecoveryModal'
 import type { ReactNode } from 'react'
 import { type ReactElement } from 'react'
 import { type AppProps } from 'next/app'
@@ -8,7 +10,6 @@ import CssBaseline from '@mui/material/CssBaseline'
 import type { Theme } from '@mui/material/styles'
 import { ThemeProvider } from '@mui/material/styles'
 import { setBaseUrl as setGatewayBaseUrl } from '@safe-global/safe-gateway-typescript-sdk'
-import { setBaseUrl as setNewGatewayBaseUrl } from '@safe-global/safe-client-gateway-sdk'
 import { CacheProvider, type EmotionCache } from '@emotion/react'
 import SafeThemeProvider from '@/components/theme/SafeThemeProvider'
 import '@/styles/globals.css'
@@ -24,13 +25,14 @@ import useSafeNotifications from '@/hooks/useSafeNotifications'
 import useTxPendingStatuses from '@/hooks/useTxPendingStatuses'
 import { useInitSession } from '@/hooks/useInitSession'
 import Notifications from '@/components/common/Notifications'
-import CookieAndTermBanner from 'src/components/common/CookieAndTermBanner'
+import CookieBanner from '@/components/common/CookieBanner'
 import { useDarkMode } from '@/hooks/useDarkMode'
 import { cgwDebugStorage } from '@/components/sidebar/DebugToggle'
 import { useTxTracking } from '@/hooks/useTxTracking'
 import { useSafeMsgTracking } from '@/hooks/messages/useSafeMsgTracking'
 import useGtm from '@/services/analytics/useGtm'
 import useBeamer from '@/hooks/Beamer/useBeamer'
+import useLocalConfig from '@/hooks/useLocalConfig'
 import ErrorBoundary from '@/components/common/ErrorBoundary'
 import createEmotionCache from '@/utils/createEmotionCache'
 import MetaTags from '@/components/common/MetaTags'
@@ -43,18 +45,13 @@ import { useNotificationTracking } from '@/components/settings/PushNotifications
 import Recovery from '@/features/recovery/components/Recovery'
 import WalletProvider from '@/components/common/WalletProvider'
 import CounterfactualHooks from '@/features/counterfactual/CounterfactualHooks'
-import PkModulePopup from '@/services/private-key-module/PkModulePopup'
-import GeoblockingProvider from '@/components/common/GeoblockingProvider'
-import { useVisitedSafes } from '@/features/myAccounts/hooks/useVisitedSafes'
-import OutreachPopup from '@/features/targetedOutreach/components/OutreachPopup'
 
-export const GATEWAY_URL = IS_PRODUCTION || cgwDebugStorage.get() ? GATEWAY_URL_PRODUCTION : GATEWAY_URL_STAGING
+const GATEWAY_URL = IS_PRODUCTION || cgwDebugStorage.get() ? GATEWAY_URL_PRODUCTION : GATEWAY_URL_STAGING
 
 const reduxStore = makeStore()
 
 const InitApp = (): null => {
   setGatewayBaseUrl(GATEWAY_URL)
-  setNewGatewayBaseUrl(GATEWAY_URL)
   useHydrateStore(reduxStore)
   useAdjustUrl()
   useGtm()
@@ -72,8 +69,9 @@ const InitApp = (): null => {
   useTxTracking()
   useSafeMsgTracking()
   useBeamer()
-  useVisitedSafes()
-
+  useRehydrateSocialWallet()
+  useLocalConfig()
+  
   return null
 }
 
@@ -90,9 +88,7 @@ export const AppProviders = ({ children }: { children: ReactNode | ReactNode[] }
         <ThemeProvider theme={safeTheme}>
           <SentryErrorBoundary showDialog fallback={ErrorBoundary}>
             <WalletProvider>
-              <GeoblockingProvider>
-                <TxModalProvider>{children}</TxModalProvider>
-              </GeoblockingProvider>
+              <TxModalProvider>{children}</TxModalProvider>
             </WalletProvider>
           </SentryErrorBoundary>
         </ThemeProvider>
@@ -130,17 +126,15 @@ const WebCoreApp = ({
             <Component {...pageProps} key={safeKey} />
           </PageLayout>
 
-          <CookieAndTermBanner />
-
-          <OutreachPopup />
+          <CookieBanner />
 
           <Notifications />
+
+          <PasswordRecoveryModal />
 
           <Recovery />
 
           <CounterfactualHooks />
-
-          <PkModulePopup />
         </AppProviders>
       </CacheProvider>
     </Provider>

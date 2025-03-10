@@ -1,15 +1,15 @@
-import { memo, type ReactElement, useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { alpha, Box } from '@mui/system'
 import { Grid, LinearProgress } from '@mui/material'
 
 import type { BrowserPermission } from '@/hooks/safe-apps/permissions'
 import Slider from './Slider'
+import LegalDisclaimer from './LegalDisclaimer'
 import AllowedFeaturesList from './AllowedFeaturesList'
 import type { AllowedFeatures, AllowedFeatureSelection } from '../types'
 import { PermissionStatus } from '../types'
 import UnknownAppWarning from './UnknownAppWarning'
 import { getOrigin } from '../utils'
-import LegalDisclaimerContent from '@/components/common/LegalDisclaimerContent'
 
 type SafeAppsInfoModalProps = {
   onCancel: () => void
@@ -31,7 +31,7 @@ const SafeAppsInfoModal = ({
   isPermissionsReviewCompleted,
   isSafeAppInDefaultList,
   isFirstTimeAccessingApp,
-}: SafeAppsInfoModalProps): ReactElement => {
+}: SafeAppsInfoModalProps): JSX.Element => {
   const [hideWarning, setHideWarning] = useState(false)
   const [selectedFeatures, setSelectedFeatures] = useState<AllowedFeatureSelection[]>(
     features.map((feature) => {
@@ -110,15 +110,7 @@ const SafeAppsInfoModal = ({
   const origin = useMemo(() => getOrigin(appUrl), [appUrl])
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        height: 'calc(100vh - 52px)',
-      }}
-    >
+    <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" height="calc(100vh - 52px)">
       <Box
         data-testid="app-info-modal"
         sx={({ palette }) => ({
@@ -141,18 +133,9 @@ const SafeAppsInfoModal = ({
             },
           })}
         />
-        <Grid
-          container
-          direction="column"
-          sx={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center',
-            p: 3,
-          }}
-        >
+        <Grid container justifyContent="center" alignItems="center" direction="column" textAlign="center" p={3}>
           <Slider onSlideChange={handleSlideChange}>
-            {!isConsentAccepted && <LegalDisclaimerContent />}
+            {!isConsentAccepted && <LegalDisclaimer />}
 
             {!isPermissionsReviewCompleted && (
               <AllowedFeaturesList

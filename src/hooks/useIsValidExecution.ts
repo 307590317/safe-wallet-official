@@ -9,11 +9,9 @@ import { type JsonRpcProvider } from 'ethers'
 import { type ConnectedWallet } from '@/hooks/wallets/useOnboard'
 import { getCurrentGnosisSafeContract } from '@/services/contracts/safeContracts'
 import useSafeInfo from '@/hooks/useSafeInfo'
-import { useSigner } from '@/hooks/wallets/useWallet'
+import useWallet from '@/hooks/wallets/useWallet'
 import { encodeSignatures } from '@/services/tx/encodeSignatures'
 import useIsSafeOwner from '@/hooks/useIsSafeOwner'
-import { type NestedWallet } from '@/utils/nested-safe-wallet'
-import { assertProvider } from '@/utils/helpers'
 
 const isContractError = (error: EthersError) => {
   if (!error.reason) return false
@@ -24,12 +22,10 @@ const isContractError = (error: EthersError) => {
 // Monkey patch the signerProvider to proxy requests to the "readonly" provider if on the wrong chain
 // This is ONLY used to check the validity of a transaction in `useIsValidExecution`
 export const getPatchedSignerProvider = (
-  wallet: ConnectedWallet | NestedWallet,
+  wallet: ConnectedWallet,
   chainId: SafeInfo['chainId'],
   readOnlyProvider: JsonRpcProvider,
 ) => {
-  assertProvider(wallet.provider)
-
   const signerProvider = createWeb3(wallet.provider)
 
   if (wallet.chainId !== chainId) {
@@ -61,7 +57,7 @@ const useIsValidExecution = (
   executionValidationError?: Error
   isValidExecutionLoading: boolean
 } => {
-  const wallet = useSigner()
+  const wallet = useWallet()
   const { safe } = useSafeInfo()
   const readOnlyProvider = useWeb3ReadOnly()
   const isOwner = useIsSafeOwner()
@@ -73,7 +69,8 @@ const useIsValidExecution = (
     }
 
     try {
-      const safeContract = await getCurrentGnosisSafeContract(safe, readOnlyProvider._getConnection().url)
+      const provider = getPatchedSignerProvider(wallet, safe.chainId, readOnlyProvider)
+      const safeContract = await getCurrentGnosisSafeContract(safe, provider)
 
       /**
        * We need to call the contract directly instead of using `sdk.isValidTransaction`

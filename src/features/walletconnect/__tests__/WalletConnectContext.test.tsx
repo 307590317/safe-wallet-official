@@ -2,7 +2,7 @@ import { extendedSafeInfoBuilder } from '@/tests/builders/safe'
 import { toBeHex } from 'ethers'
 import { useContext } from 'react'
 import type { SafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
-import type { WalletKitTypes } from '@reown/walletkit'
+import type { Web3WalletTypes } from '@walletconnect/web3wallet'
 import type { SessionTypes } from '@walletconnect/types'
 
 import { act, fireEvent, render, waitFor } from '@/tests/test-utils'
@@ -12,8 +12,6 @@ import { WalletConnectProvider } from '../components/WalletConnectProvider'
 import { safeInfoSlice } from '@/store/safeInfoSlice'
 import { useAppDispatch } from '@/store'
 import * as useSafeWalletProvider from '@/services/safe-wallet-provider/useSafeWalletProvider'
-
-jest.mock('@reown/walletkit', () => jest.fn())
 
 jest.mock('../services/WalletConnectWallet')
 jest.mock('@/services/safe-wallet-provider/useSafeWalletProvider')
@@ -248,7 +246,7 @@ describe('WalletConnectProvider', () => {
         () =>
           ({
             request: mockRequest,
-          }) as unknown as ReturnType<typeof useSafeWalletProvider.default>,
+          } as unknown as ReturnType<typeof useSafeWalletProvider.default>),
       )
 
       render(
@@ -278,7 +276,7 @@ describe('WalletConnectProvider', () => {
           request: {},
           chainId: 'eip155:5', // Goerli
         },
-      } as unknown as WalletKitTypes.SessionRequest)
+      } as unknown as Web3WalletTypes.SessionRequest)
 
       await waitFor(() => {
         expect(sendSessionResponseSpy).toHaveBeenCalledWith('topic', {
@@ -307,7 +305,7 @@ describe('WalletConnectProvider', () => {
         () =>
           ({
             request: mockRequest,
-          }) as unknown as ReturnType<typeof useSafeWalletProvider.default>,
+          } as unknown as ReturnType<typeof useSafeWalletProvider.default>),
       )
 
       render(
@@ -337,7 +335,7 @@ describe('WalletConnectProvider', () => {
           request: {},
           chainId: 'eip155:1', // Mainnet
         },
-      } as unknown as WalletKitTypes.SessionRequest)
+      } as unknown as Web3WalletTypes.SessionRequest)
 
       await waitFor(() => {
         expect(sendSessionResponseSpy).toHaveBeenCalledWith('topic', {
@@ -374,7 +372,7 @@ describe('WalletConnectProvider', () => {
         () =>
           ({
             request: mockRequest,
-          }) as unknown as ReturnType<typeof useSafeWalletProvider.default>,
+          } as unknown as ReturnType<typeof useSafeWalletProvider.default>),
       )
 
       render(
@@ -406,15 +404,16 @@ describe('WalletConnectProvider', () => {
           request: { method: 'fake', params: [] },
           chainId: 'eip155:5', // Goerli
         },
-      } as unknown as WalletKitTypes.SessionRequest)
+      } as unknown as Web3WalletTypes.SessionRequest)
 
       expect(mockRequest).toHaveBeenCalledWith(
         1,
         { method: 'fake', params: [] },
         {
+          id: 25,
           name: 'name',
           description: 'description',
-          url: 'https://apps-portal.safe.global/wallet-connect',
+          url: 'https://safe-apps.dev.5afe.dev/wallet-connect',
           iconUrl: 'iconUrl',
         },
       )
@@ -445,7 +444,7 @@ describe('WalletConnectProvider', () => {
         () =>
           ({
             request: () => Promise.reject(new Error('Test request failed')),
-          }) as unknown as ReturnType<typeof useSafeWalletProvider.default>,
+          } as unknown as ReturnType<typeof useSafeWalletProvider.default>),
       )
 
       const onRequestSpy = jest.spyOn(WalletConnectWallet.prototype, 'onRequest')
@@ -478,7 +477,7 @@ describe('WalletConnectProvider', () => {
           request: {},
           chainId: 'eip155:5', // Goerli
         },
-      } as unknown as WalletKitTypes.SessionRequest)
+      } as unknown as Web3WalletTypes.SessionRequest)
 
       expect(sendSessionResponseSpy).not.toHaveBeenCalled()
 

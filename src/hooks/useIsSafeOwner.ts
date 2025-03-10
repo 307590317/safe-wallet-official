@@ -1,12 +1,12 @@
 import useSafeInfo from '@/hooks/useSafeInfo'
+import useWallet from '@/hooks/wallets/useWallet'
 import { isOwner } from '@/utils/transaction-guards'
-import { useSigner } from './wallets/useWallet'
 
 const useIsSafeOwner = () => {
   const { safe } = useSafeInfo()
-  const signer = useSigner()
+  const wallet = useWallet()
 
-  return isOwner(safe.owners, signer?.address)
+  return isOwner(safe.owners, wallet?.address)
 }
 
 export default useIsSafeOwner

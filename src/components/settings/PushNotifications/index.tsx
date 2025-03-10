@@ -9,8 +9,6 @@ import {
   Switch,
   Divider,
   Link as MuiLink,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -29,10 +27,11 @@ import { PUSH_NOTIFICATION_EVENTS } from '@/services/analytics/events/push-notif
 import { AppRoutes } from '@/config/routes'
 import CheckWallet from '@/components/common/CheckWallet'
 import { useIsMac } from '@/hooks/useIsMac'
+import useOnboard from '@/hooks/wallets/useOnboard'
+import { assertWalletChain } from '@/services/tx/tx-sender/sdk'
 import ExternalLink from '@/components/common/ExternalLink'
 
 import css from './styles.module.css'
-import NetworkWarning from '@/components/new-safe/create/NetworkWarning'
 
 export const PushNotifications = (): ReactElement => {
   const { safe, safeLoaded } = useSafeInfo()
@@ -40,8 +39,7 @@ export const PushNotifications = (): ReactElement => {
   const isMac = useIsMac()
   const [isRegistering, setIsRegistering] = useState(false)
   const [isUpdatingIndexedDb, setIsUpdatingIndexedDb] = useState(false)
-  const theme = useTheme()
-  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'))
+  const onboard = useOnboard()
 
   const { updatePreferences, getPreferences, getAllPreferences } = useNotificationPreferences()
   const { unregisterSafeNotifications, unregisterDeviceNotifications, registerNotifications } =
@@ -60,7 +58,17 @@ export const PushNotifications = (): ReactElement => {
   const shouldShowMacHelper = isMac || IS_DEV
 
   const handleOnChange = async () => {
+    if (!onboard) {
+      return
+    }
+
     setIsRegistering(true)
+
+    try {
+      await assertWalletChain(onboard, safe.chainId)
+    } catch {
+      return
+    }
 
     if (!preferences) {
       await registerNotifications({ [safe.chainId]: [safe.address.value] })
@@ -90,24 +98,13 @@ export const PushNotifications = (): ReactElement => {
       <Paper sx={{ p: 4, mb: 2 }}>
         <Grid container spacing={3}>
           <Grid item sm={4} xs={12}>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-              }}
-            >
+            <Typography variant="h4" fontWeight={700}>
               Push notifications
             </Typography>
           </Grid>
 
           <Grid item xs>
-            <Grid
-              container
-              sx={{
-                gap: 2.5,
-                flexDirection: 'column',
-              }}
-            >
+            <Grid container gap={2.5} flexDirection="column">
               <Typography>
                 Enable push notifications for {safeLoaded ? 'this Safe Account' : 'your Safe Accounts'} in your browser
                 with your signature. You will need to enable them again if you clear your browser cache. Learn more
@@ -116,13 +113,7 @@ export const PushNotifications = (): ReactElement => {
 
               {shouldShowMacHelper && (
                 <Alert severity="info" className={css.macOsInfo}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 700,
-                      mb: 1,
-                    }}
-                  >
+                  <Typography fontWeight={700} variant="body2" mb={1}>
                     For macOS users
                   </Typography>
                   <Typography variant="body2">
@@ -135,20 +126,18 @@ export const PushNotifications = (): ReactElement => {
               {safeLoaded ? (
                 <>
                   <Divider />
-                  <NetworkWarning action="change your notification settings" />
 
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <EthHashInfo
                       address={safe.address.value}
                       showCopyButton
-                      shortAddress={!isLargeScreen}
+                      shortAddress={false}
                       showName={true}
                       hasExplorer
                     />
-                    <CheckWallet allowNonOwner checkNetwork={!isRegistering && safe.deployed}>
+                    <CheckWallet allowNonOwner>
                       {(isOk) => (
                         <FormControlLabel
-                          data-testid="notifications-switch"
                           control={<Switch checked={!!preferences} onChange={handleOnChange} />}
                           label={preferences ? 'On' : 'Off'}
                           disabled={!isOk || isRegistering || !safe.deployed}
@@ -178,12 +167,7 @@ export const PushNotifications = (): ReactElement => {
         <Paper sx={{ p: 4 }}>
           <Grid container spacing={3}>
             <Grid item sm={4} xs={12}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 700,
-                }}
-              >
+              <Typography variant="h4" fontWeight={700}>
                 Notification
               </Typography>
             </Grid>
@@ -266,12 +250,7 @@ export const PushNotifications = (): ReactElement => {
                     <>
                       <Typography>Confirmation requests</Typography>
                       {!preferences[WebhookType.CONFIRMATION_REQUEST] && (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: 'text.secondary',
-                          }}
-                        >
+                        <Typography color="text.secondary" variant="body2">
                           {isOwner ? 'Requires your signature' : 'Only signers'}
                         </Typography>
                       )}

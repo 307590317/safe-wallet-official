@@ -12,7 +12,7 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 
 const setupFetchStub =
   (data: any, status: number = 200) =>
-  () => {
+  (_url: string) => {
     return Promise.resolve({
       json: () => Promise.resolve(data),
       status,
@@ -32,8 +32,8 @@ describe('_getRedeemDeadline', () => {
     jest.clearAllMocks()
   })
 
-  it('should only call the provider once per address on a chain', async () => {
-    for (let i = 0; i < 10; i++) {
+  it('should should only call the provider once per address on a chain', async () => {
+    for await (const _ of Array.from({ length: 10 })) {
       await _getRedeemDeadline({ chainId: 1, contract: toBeHex('0x1', 20) } as VestingData, mockProvider)
     }
 
@@ -82,7 +82,7 @@ describe('Allocations', () => {
             address: toBeHex('0x2', 20),
             chainId: '1',
           },
-        }) as any,
+        } as any),
     )
   })
 
@@ -96,7 +96,7 @@ describe('Allocations', () => {
               address: undefined,
               chainId: '1',
             },
-          }) as any,
+          } as any),
       )
 
       const { result } = renderHook(() => useSafeTokenAllocation())
@@ -170,7 +170,7 @@ describe('Allocations', () => {
               }
               return Promise.resolve('0x')
             },
-          }) as any,
+          } as any),
       )
 
       const { result } = renderHook(() => useSafeTokenAllocation())
@@ -229,7 +229,7 @@ describe('Allocations', () => {
               }
               return Promise.resolve('0x')
             },
-          }) as any,
+          } as any),
       )
 
       const { result } = renderHook(() => useSafeTokenAllocation())
@@ -268,7 +268,7 @@ describe('Allocations', () => {
               address: undefined,
               chainId: '1',
             },
-          }) as any,
+          } as any),
       )
 
       const { result } = renderHook(() => useSafeVotingPower([{} as Vesting]))
@@ -279,49 +279,42 @@ describe('Allocations', () => {
       })
     })
 
-    it('should return total balance of tokens held and tokens in locking contract if no allocation exists', async () => {
+    it('should return balance if no allocation exists', async () => {
       jest.spyOn(web3, 'getWeb3ReadOnly').mockImplementation(
         () =>
           ({
             call: (transaction: any) => {
-              const balanceOfSigHash = keccak256(toUtf8Bytes('balanceOf(address)')).slice(0, 10)
-              const lockingBalanceSigHash = keccak256(toUtf8Bytes('getUserTokenBalance(address)')).slice(0, 10)
+              const sigHash = keccak256(toUtf8Bytes('balanceOf(address)')).slice(0, 10)
 
-              if (transaction.data?.startsWith(balanceOfSigHash)) {
-                return Promise.resolve('0x' + parseEther('100').toString(16))
-              }
-              if (transaction.data?.startsWith(lockingBalanceSigHash)) {
-                return Promise.resolve('0x' + parseEther('100').toString(16))
+              if (transaction.data?.startsWith(sigHash)) {
+                return Promise.resolve(parseEther('100').toString(16))
               }
               return Promise.resolve('0x')
             },
-          }) as any,
+          } as any),
       )
 
       const { result } = renderHook(() => useSafeVotingPower())
+
       await waitFor(() => {
-        expect(result.current[0] === parseEther('200')).toBeTruthy()
+        expect(result.current[0] === parseEther('100')).toBeTruthy()
         expect(result.current[1]).toBeFalsy()
       })
     })
 
-    test('formula: allocation - claimed + token balance + locking balance', async () => {
+    test('formula: allocation - claimed + balance', async () => {
       jest.spyOn(web3, 'getWeb3ReadOnly').mockImplementation(
         () =>
           ({
             call: (transaction: any) => {
               const balanceOfSigHash = keccak256(toUtf8Bytes('balanceOf(address)')).slice(0, 10)
-              const lockingBalanceSigHash = keccak256(toUtf8Bytes('getUserTokenBalance(address)')).slice(0, 10)
 
               if (transaction.data?.startsWith(balanceOfSigHash)) {
                 return Promise.resolve('0x' + BigInt('400').toString(16))
               }
-              if (transaction.data?.startsWith(lockingBalanceSigHash)) {
-                return Promise.resolve('0x' + BigInt('200').toString(16))
-              }
               return Promise.resolve('0x')
             },
-          }) as any,
+          } as any),
       )
 
       const mockAllocation: Vesting[] = [
@@ -345,28 +338,24 @@ describe('Allocations', () => {
       const { result } = renderHook(() => useSafeVotingPower(mockAllocation))
 
       await waitFor(() => {
-        expect(Number(result.current[0])).toEqual(2000 - 1000 + 400 + 200)
+        expect(Number(result.current[0])).toEqual(2000 - 1000 + 400)
         expect(result.current[1]).toBeFalsy()
       })
     })
 
-    test('formula: allocation - claimed + token balance + locking balance, everything claimed and no balance', async () => {
+    test('formula: allocation - claimed + balance, everything claimed and no balance', async () => {
       jest.spyOn(web3, 'getWeb3ReadOnly').mockImplementation(
         () =>
           ({
             call: (transaction: any) => {
               const balanceOfSigHash = keccak256(toUtf8Bytes('balanceOf(address)')).slice(0, 10)
-              const lockingBalanceSigHash = keccak256(toUtf8Bytes('getUserTokenBalance(address)')).slice(0, 10)
 
               if (transaction.data?.startsWith(balanceOfSigHash)) {
-                return Promise.resolve('0x' + BigInt('0').toString(16))
-              }
-              if (transaction.data?.startsWith(lockingBalanceSigHash)) {
-                return Promise.resolve('0x' + BigInt('0').toString(16))
+                return Promise.resolve(BigInt('0').toString(16))
               }
               return Promise.resolve('0x')
             },
-          }) as any,
+          } as any),
       )
 
       const mockAllocation: Vesting[] = [

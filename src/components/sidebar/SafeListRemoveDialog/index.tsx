@@ -12,7 +12,6 @@ import Track from '@/components/common/Track'
 import { OVERVIEW_EVENTS, OVERVIEW_LABELS } from '@/services/analytics'
 import { AppRoutes } from '@/config/routes'
 import router from 'next/router'
-import { removeAddressBookEntry } from '@/store/addressBookSlice'
 
 const SafeListRemoveDialog = ({
   handleClose,
@@ -32,15 +31,14 @@ const SafeListRemoveDialog = ({
 
   const handleConfirm = () => {
     dispatch(removeSafe({ chainId, address }))
-    dispatch(removeAddressBookEntry({ chainId, address }))
     handleClose()
   }
 
   return (
-    <ModalDialog open onClose={handleClose} dialogTitle="Delete entry" chainId={chainId}>
+    <ModalDialog open onClose={handleClose} dialogTitle="Delete entry">
       <DialogContent sx={{ p: '24px !important' }}>
         <Typography>
-          Are you sure you want to remove the <b>{safe}</b> account?
+          Are you sure you want to remove <b>{safe}</b> from your Watchlist?
         </Typography>
       </DialogContent>
 

@@ -1,7 +1,7 @@
 import { extendedSafeInfoBuilder } from '@/tests/builders/safe'
 import { renderHook } from '@/tests/test-utils'
 import type { ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
-import type { WalletKitTypes } from '@reown/walletkit'
+import type { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { useCompatibilityWarning } from '../useCompatibilityWarning'
 import * as wcUtils from '@/features/walletconnect/services/utils'
 
@@ -13,7 +13,7 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: 'Fake Bridge' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, false))
 
@@ -30,7 +30,7 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: '' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, false))
 
@@ -50,13 +50,13 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: 'Fake Bridge' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, false))
 
       expect(result.current).toEqual({
         message:
-          'While bridging via Fake Bridge, please make sure that the desination address you send funds to matches the Safe address you have on the respective chain. Otherwise, the funds will be lost.',
+          'While using Fake Bridge, please make sure that the desination address you send funds to matches the Safe address you have on the respective chain. Otherwise, the funds will be lost.',
         severity: 'warning',
       })
     })
@@ -68,13 +68,13 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: '' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, false))
 
       expect(result.current).toEqual({
         message:
-          'While bridging via this dApp, please make sure that the desination address you send funds to matches the Safe address you have on the respective chain. Otherwise, the funds will be lost.',
+          'While using this dApp, please make sure that the desination address you send funds to matches the Safe address you have on the respective chain. Otherwise, the funds will be lost.',
         severity: 'warning',
       })
     })
@@ -88,7 +88,7 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: 'Fake dApp' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, true))
 
@@ -105,7 +105,7 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: '' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, true))
 
@@ -124,7 +124,7 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: 'Fake dApp' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, false), {
         initialReduxState: {
@@ -163,7 +163,7 @@ describe('useCompatibilityWarning', () => {
       const proposal = {
         params: { proposer: { metadata: { name: 'Fake dApp' } } },
         verifyContext: { verified: { origin: '' } },
-      } as unknown as WalletKitTypes.SessionProposal
+      } as unknown as Web3WalletTypes.SessionProposal
 
       const { result } = renderHook(() => useCompatibilityWarning(proposal, false))
 

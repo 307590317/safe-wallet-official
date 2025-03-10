@@ -62,26 +62,15 @@ const SafeTxGasForm = () => {
   const [editing, setEditing] = useState(false)
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        position: 'relative',
-      }}
-    >
+    <Box display="flex" alignItems="center" gap={1} position="relative">
       {safeTxGas}
+
       {isEditable && (
-        <Link
-          component="button"
-          onClick={() => setEditing(true)}
-          sx={{
-            fontSize: 'small',
-          }}
-        >
+        <Link component="button" onClick={() => setEditing(true)} fontSize="small">
           Edit
         </Link>
       )}
+
       {editing && <Form onSubmit={() => setEditing(false)} />}
     </Box>
   )

@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useCallback } from 'react'
+import { useCallback } from 'react'
 import type { SafeAppData } from '@safe-global/safe-gateway-typescript-sdk'
 
 import SafeAppCard from '@/components/safe-apps/SafeAppCard'
@@ -10,54 +10,42 @@ import useSafeAppPreviewDrawer from '@/hooks/safe-apps/useSafeAppPreviewDrawer'
 import css from './styles.module.css'
 import { Skeleton } from '@mui/material'
 import { useOpenedSafeApps } from '@/hooks/safe-apps/useOpenedSafeApps'
-import NativeSwapsCard from '@/components/safe-apps/NativeSwapsCard'
-import { SAFE_APPS_EVENTS, SAFE_APPS_LABELS, trackSafeAppEvent } from '@/services/analytics'
-import { useSafeApps } from '@/hooks/safe-apps/useSafeApps'
 
 type SafeAppListProps = {
   safeAppsList: SafeAppData[]
   safeAppsListLoading?: boolean
   bookmarkedSafeAppsId?: Set<number>
-  eventLabel: SAFE_APPS_LABELS
+  onBookmarkSafeApp?: (safeAppId: number) => void
   addCustomApp?: (safeApp: SafeAppData) => void
   removeCustomApp?: (safeApp: SafeAppData) => void
   title: string
   query?: string
-  isFiltered?: boolean
-  showNativeSwapsCard?: boolean
 }
 
 const SafeAppList = ({
   safeAppsList,
   safeAppsListLoading,
   bookmarkedSafeAppsId,
-  eventLabel,
+  onBookmarkSafeApp,
   addCustomApp,
   removeCustomApp,
   title,
   query,
-  isFiltered = false,
-  showNativeSwapsCard = false,
 }: SafeAppListProps) => {
-  const { togglePin } = useSafeApps()
   const { isPreviewDrawerOpen, previewDrawerApp, openPreviewDrawer, closePreviewDrawer } = useSafeAppPreviewDrawer()
   const { openedSafeAppIds } = useOpenedSafeApps()
 
   const showZeroResultsPlaceholder = query && safeAppsList.length === 0
 
   const handleSafeAppClick = useCallback(
-    (e: SyntheticEvent, safeApp: SafeAppData) => {
+    (safeApp: SafeAppData) => {
       const isCustomApp = safeApp.id < 1
-      if (!openedSafeAppIds.includes(safeApp.id) && !isCustomApp) {
-        // Don't open link
-        e.preventDefault()
-        openPreviewDrawer(safeApp)
-      } else {
-        // We only track if not previously opened as it is then tracked in preview drawer
-        trackSafeAppEvent({ ...SAFE_APPS_EVENTS.OPEN_APP, label: eventLabel }, safeApp.name)
-      }
+
+      if (isCustomApp || openedSafeAppIds.includes(safeApp.id)) return
+
+      return () => openPreviewDrawer(safeApp)
     },
-    [eventLabel, openPreviewDrawer, openedSafeAppIds],
+    [openPreviewDrawer, openedSafeAppIds],
   )
 
   return (
@@ -81,17 +69,15 @@ const SafeAppList = ({
             </li>
           ))}
 
-        {!isFiltered && showNativeSwapsCard && <NativeSwapsCard />}
-
         {/* Flat list filtered by search query */}
         {safeAppsList.map((safeApp) => (
           <li key={safeApp.id}>
             <SafeAppCard
               safeApp={safeApp}
               isBookmarked={bookmarkedSafeAppsId?.has(safeApp.id)}
-              onBookmarkSafeApp={() => togglePin(safeApp.id, eventLabel)}
+              onBookmarkSafeApp={onBookmarkSafeApp}
               removeCustomApp={removeCustomApp}
-              onClickSafeApp={(e) => handleSafeAppClick(e, safeApp)}
+              onClickSafeApp={handleSafeAppClick(safeApp)}
               openPreviewDrawer={openPreviewDrawer}
             />
           </li>
@@ -107,7 +93,7 @@ const SafeAppList = ({
         safeApp={previewDrawerApp}
         isBookmarked={previewDrawerApp && bookmarkedSafeAppsId?.has(previewDrawerApp.id)}
         onClose={closePreviewDrawer}
-        onBookmark={(appId) => togglePin(appId, SAFE_APPS_LABELS.apps_sidebar)}
+        onBookmark={onBookmarkSafeApp}
       />
     </>
   )

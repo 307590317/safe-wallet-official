@@ -2,19 +2,17 @@ import { Box, Card, CardContent, CardHeader, List, ListItem, ListItemIcon, ListI
 import type { ListItemTextProps } from '@mui/material'
 import type { CardHeaderProps } from '@mui/material'
 import type { ReactElement } from 'react'
-import FileIcon from '@/public/images/settings/data/file.svg'
 
+import FileIcon from '@/public/images/settings/data/file.svg'
 import useChains from '@/hooks/useChains'
 import { ImportErrors } from '@/components/settings/DataManagement/useGlobalImportFileParser'
 import type { AddedSafesState } from '@/store/addedSafesSlice'
 import type { AddressBookState } from '@/store/addressBookSlice'
 import type { SafeAppsState } from '@/store/safeAppsSlice'
 import type { SettingsState } from '@/store/settingsSlice'
-import type { UndeployedSafesState } from '@/features/counterfactual/store/undeployedSafesSlice'
 import type { ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
 
 import css from './styles.module.css'
-import type { VisitedSafesState } from '@/store/visitedSafesSlice'
 
 const getItemSecondaryText = (
   chains: ChainInfo[],
@@ -53,8 +51,6 @@ type Data = {
   addressBook?: AddressBookState
   settings?: SettingsState
   safeApps?: SafeAppsState
-  undeployedSafes?: UndeployedSafesState
-  visitedSafes?: VisitedSafesState
   error?: string
 }
 
@@ -69,8 +65,6 @@ const getItems = ({
   addressBook,
   settings,
   safeApps,
-  undeployedSafes,
-  visitedSafes,
   error,
   chains,
   showPreview = false,
@@ -81,7 +75,6 @@ const getItems = ({
 
   const addedSafeChainAmount = Object.keys(addedSafes || {}).length
   const addressBookChainAmount = Object.keys(addressBook || {}).length
-  const undeployedSafesCount = Object.values(undeployedSafes || {}).flatMap((items) => Object.keys(items)).length
 
   const items: Array<ListItemTextProps> = []
 
@@ -123,18 +116,6 @@ const getItems = ({
     items.push(settingsPreview)
   }
 
-  if (visitedSafes) {
-    const visitedSafesPreview: ListItemTextProps = {
-      primary: (
-        <>
-          <b>Visited Safe Accounts history</b>
-        </>
-      ),
-    }
-
-    items.push(visitedSafesPreview)
-  }
-
   const hasBookmarkedSafeApps = Object.values(safeApps || {}).some((chainId) => chainId.pinned?.length > 0)
   if (hasBookmarkedSafeApps) {
     const safeAppsPreview: ListItemTextProps = {
@@ -146,18 +127,6 @@ const getItems = ({
     }
 
     items.push(safeAppsPreview)
-  }
-
-  if (undeployedSafes) {
-    const undeployedSafesPreview: ListItemTextProps = {
-      primary: (
-        <>
-          <b>Not activated Safe Accounts</b> {undeployedSafesCount}
-        </>
-      ),
-    }
-
-    items.push(undeployedSafesPreview)
   }
 
   if (items.length === 0) {
@@ -174,24 +143,12 @@ export const FileListCard = ({
   addressBook,
   settings,
   safeApps,
-  undeployedSafes,
-  visitedSafes,
   error,
   showPreview = false,
   ...cardHeaderProps
 }: Props): ReactElement => {
   const chains = useChains()
-  const items = getItems({
-    addedSafes,
-    addressBook,
-    settings,
-    safeApps,
-    visitedSafes,
-    undeployedSafes,
-    error,
-    chains: chains.configs,
-    showPreview,
-  })
+  const items = getItems({ addedSafes, addressBook, settings, safeApps, error, chains: chains.configs, showPreview })
 
   return (
     <Card className={css.card}>

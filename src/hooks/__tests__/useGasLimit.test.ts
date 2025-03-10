@@ -12,7 +12,7 @@ import { connectedWalletBuilder } from '@/tests/builders/wallet'
 import { createMockSafeTransaction } from '@/tests/transactions'
 import { safeInfoBuilder } from '@/tests/builders/safe'
 import { type JsonRpcProvider, zeroPadValue } from 'ethers'
-import { Gnosis_safe__factory } from '@/types/contracts/factories/@safe-global/safe-deployments/dist/assets/v1.3.0'
+import { Gnosis_safe__factory } from '@/bitlayer-safe-deployments/src/assets/v1.3.0'
 import { generatePreValidatedSignature } from '@safe-global/protocol-kit/dist/src/utils'
 
 const contractManager = mockContractManager()
@@ -30,9 +30,7 @@ describe('useGasLimit', () => {
       getContractManager: () => contractManager,
     } as unknown as Safe)
 
-    jest
-      .spyOn(useWallet, 'useSigner')
-      .mockReturnValue(connectedWalletBuilder().with({ address: walletAddress }).build())
+    jest.spyOn(useWallet, 'default').mockReturnValue(connectedWalletBuilder().with({ address: walletAddress }).build())
     jest.spyOn(useSafeInfo, 'default').mockReturnValue({
       safe: { ...safeInfo, deployed: true },
       safeAddress: safeInfo.address.value,
@@ -51,7 +49,7 @@ describe('useGasLimit', () => {
   })
 
   it('should return undefined if no owner is connected', async () => {
-    jest.spyOn(useWallet, 'useSigner').mockReturnValue(
+    jest.spyOn(useWallet, 'default').mockReturnValue(
       connectedWalletBuilder()
         .with({
           address: undefined,

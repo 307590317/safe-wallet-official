@@ -13,7 +13,7 @@ import useChainId from '@/hooks/useChainId'
 import { trackEvent, SETTINGS_EVENTS } from '@/services/analytics'
 import { createNewSpendingLimitTx } from '@/services/tx/tx-sender'
 import { selectSpendingLimits } from '@/store/spendingLimitsSlice'
-import { formatVisualAmount, safeParseUnits } from '@/utils/formatters'
+import { formatVisualAmount } from '@/utils/formatters'
 import type { NewSpendingLimitFlowProps } from '.'
 import EthHashInfo from '@/components/common/EthHashInfo'
 import { SafeTxContext } from '../../SafeTxProvider'
@@ -27,11 +27,6 @@ export const ReviewSpendingLimit = ({ params }: { params: NewSpendingLimitFlowPr
   const { setSafeTx, setSafeTxError } = useContext(SafeTxContext)
   const token = balances.items.find((item) => item.tokenInfo.address === params.tokenAddress)
   const { decimals } = token?.tokenInfo || {}
-
-  const amountInWei = useMemo(
-    () => safeParseUnits(params.amount, token?.tokenInfo.decimals)?.toString() || '0',
-    [params.amount, token?.tokenInfo.decimals],
-  )
 
   const existingSpendingLimit = useMemo(() => {
     return spendingLimits.find(
@@ -81,7 +76,7 @@ export const ReviewSpendingLimit = ({ params }: { params: NewSpendingLimitFlowPr
   return (
     <SignOrExecuteForm onSubmit={onFormSubmit}>
       {token && (
-        <SendAmountBlock amountInWei={amountInWei} tokenInfo={token.tokenInfo} title="Amount">
+        <SendAmountBlock amount={params.amount} tokenInfo={token.tokenInfo} title="Amount">
           {existingAmount && existingAmount !== params.amount && (
             <>
               <Typography
@@ -92,25 +87,15 @@ export const ReviewSpendingLimit = ({ params }: { params: NewSpendingLimitFlowPr
               >
                 {existingAmount}
               </Typography>
-              →
+              {'→'}
             </>
           )}
         </SendAmountBlock>
       )}
-      <Grid
-        container
-        sx={{
-          gap: 1,
-          alignItems: 'center',
-        }}
-      >
+
+      <Grid container gap={1} alignItems="center">
         <Grid item md>
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'text.secondary',
-            }}
-          >
+          <Typography variant="body2" color="text.secondary">
             Beneficiary
           </Typography>
         </Grid>
@@ -125,20 +110,10 @@ export const ReviewSpendingLimit = ({ params }: { params: NewSpendingLimitFlowPr
           />
         </Grid>
       </Grid>
-      <Grid
-        container
-        sx={{
-          gap: 1,
-          alignItems: 'center',
-        }}
-      >
+
+      <Grid container gap={1} alignItems="center">
         <Grid item md>
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'text.secondary',
-            }}
-          >
+          <Typography variant="body2" color="text.secondary">
             Reset time
           </Typography>
         </Grid>
@@ -153,23 +128,16 @@ export const ReviewSpendingLimit = ({ params }: { params: NewSpendingLimitFlowPr
                         <Typography
                           data-testid="old-reset-time"
                           color="error"
+                          sx={{ textDecoration: 'line-through' }}
+                          display="inline"
                           component="span"
-                          sx={{
-                            display: 'inline',
-                            textDecoration: 'line-through',
-                          }}
                         >
                           {oldResetTime}
                         </Typography>
                         {' → '}
                       </>
                     )}
-                    <Typography
-                      component="span"
-                      sx={{
-                        display: 'inline',
-                      }}
-                    >
+                    <Typography display="inline" component="span">
                       {resetTime}
                     </Typography>
                   </>
@@ -188,12 +156,7 @@ export const ReviewSpendingLimit = ({ params }: { params: NewSpendingLimitFlowPr
       </Grid>
       {existingSpendingLimit && (
         <Alert severity="warning" sx={{ border: 'unset' }}>
-          <Typography
-            data-testid="limit-replacement-warning"
-            sx={{
-              fontWeight: 700,
-            }}
-          >
+          <Typography data-testid="limit-replacement-warning" fontWeight={700}>
             You are about to replace an existing spending limit
           </Typography>
         </Alert>

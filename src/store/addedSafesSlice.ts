@@ -1,6 +1,7 @@
 import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { AddressEx, SafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
 import type { RootState } from '.'
+import { safeInfoSlice } from '@/store/safeInfoSlice'
 
 export type AddedSafesOnChain = {
   [safeAddress: string]: {
@@ -15,6 +16,10 @@ export type AddedSafesState = {
 }
 
 const initialState: AddedSafesState = {}
+
+const isAddedSafe = (state: AddedSafesState, chainId: string, safeAddress: string) => {
+  return !!state[chainId]?.[safeAddress]
+}
 
 export const addedSafesSlice = createSlice({
   name: 'addedSafes',
@@ -49,24 +54,26 @@ export const addedSafesSlice = createSlice({
         delete state[chainId]
       }
     },
-    pinSafe: (state, { payload }: PayloadAction<{ chainId: string; address: string }>) => {
-      const { chainId, address } = payload
-      state[chainId] ??= {}
-      state[chainId][address] = state[chainId][address] ?? {}
-    },
-    unpinSafe: (state, { payload }: PayloadAction<{ chainId: string; address: string }>) => {
-      const { chainId, address } = payload
-
-      delete state[chainId]?.[address]
-
-      if (Object.keys(state[chainId]).length === 0) {
-        delete state[chainId]
+  },
+  extraReducers(builder) {
+    builder.addCase(safeInfoSlice.actions.set, (state, { payload }) => {
+      if (!payload.data) {
+        return
       }
-    },
+
+      const { chainId, address } = payload.data
+
+      if (isAddedSafe(state, chainId, address.value)) {
+        addedSafesSlice.caseReducers.addOrUpdateSafe(state, {
+          type: addOrUpdateSafe.type,
+          payload: { safe: payload.data },
+        })
+      }
+    })
   },
 })
 
-export const { addOrUpdateSafe, removeSafe, pinSafe, unpinSafe } = addedSafesSlice.actions
+export const { addOrUpdateSafe, removeSafe } = addedSafesSlice.actions
 
 export const selectAllAddedSafes = (state: RootState): AddedSafesState => {
   return state[addedSafesSlice.name]

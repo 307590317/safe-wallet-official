@@ -6,7 +6,7 @@ import { render, waitFor } from '@/tests/test-utils'
 import { safeInfoBuilder } from '@/tests/builders/safe'
 import { connectedWalletBuilder } from '@/tests/builders/wallet'
 import * as safeInfo from '@/hooks/useSafeInfo'
-import { useDidDismissProposal } from './index'
+import { _useDidDismissProposal } from './index'
 import type { RecoveryQueueItem } from '@/features/recovery/services/recovery-state'
 import store from '@/features/recovery/components/RecoveryContext'
 
@@ -19,13 +19,13 @@ describe('RecoveryModal', () => {
 
   describe('component', () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-    let _RecoveryModal: typeof import('./index').InternalRecoveryModal
+    let _RecoveryModal: typeof import('./index')._RecoveryModal
 
     beforeEach(() => {
       localStorage.clear()
 
       // Clear cache in between tests
-      _RecoveryModal = require('./index').InternalRecoveryModal
+      _RecoveryModal = require('./index')._RecoveryModal
     })
 
     it('should not render either modal if there is no queue and the user is an owner', () => {
@@ -40,7 +40,9 @@ describe('RecoveryModal', () => {
         <_RecoveryModal wallet={wallet} isOwner isRecoverer={false} queue={queue} />,
       )
 
-      expect(container.innerHTML).toMatchSnapshot()
+      expect(container.innerHTML).toBe(
+        '<div aria-hidden="true" class="MuiBackdrop-root css-1ejpag9-MuiBackdrop-root" style="opacity: 0; visibility: hidden;"></div>',
+      )
       expect(queryByText('recovery')).toBeFalsy()
     })
 
@@ -175,7 +177,9 @@ describe('RecoveryModal', () => {
           <_RecoveryModal wallet={wallet} isOwner isRecoverer={false} queue={queue} />,
         )
 
-        expect(container.innerHTML).toMatchSnapshot()
+        expect(container.innerHTML).toBe(
+          '<div aria-hidden="true" class="MuiBackdrop-root css-1ejpag9-MuiBackdrop-root" style="opacity: 0; visibility: hidden;"></div>',
+        )
         expect(queryByText('Recover this Account')).toBeFalsy()
       })
 
@@ -191,7 +195,9 @@ describe('RecoveryModal', () => {
           <_RecoveryModal wallet={wallet} isOwner={false} isRecoverer queue={queue} isSidebarRoute={false} />,
         )
 
-        expect(container.innerHTML).toMatchSnapshot()
+        expect(container.innerHTML).toBe(
+          '<div aria-hidden="true" class="MuiBackdrop-root css-1ejpag9-MuiBackdrop-root" style="opacity: 0; visibility: hidden;"></div>',
+        )
         expect(queryByText('recovery')).toBeFalsy()
       })
 
@@ -207,7 +213,9 @@ describe('RecoveryModal', () => {
           <_RecoveryModal wallet={wallet} isOwner={false} isRecoverer={false} queue={queue} />,
         )
 
-        expect(container.innerHTML).toMatchSnapshot()
+        expect(container.innerHTML).toBe(
+          '<div aria-hidden="true" class="MuiBackdrop-root css-1ejpag9-MuiBackdrop-root" style="opacity: 0; visibility: hidden;"></div>',
+        )
         expect(queryByText('Recover this Account')).toBeFalsy()
       })
     })
@@ -227,7 +235,7 @@ describe('RecoveryModal', () => {
       it('should return false if the proposal was not dismissed before', () => {
         const recovererAddress = faker.finance.ethereumAddress()
 
-        const { result } = renderHook(() => useDidDismissProposal())
+        const { result } = renderHook(() => _useDidDismissProposal())
 
         expect(result.current.wasProposalDismissed(recovererAddress)).toBeFalsy()
       })
@@ -235,7 +243,7 @@ describe('RecoveryModal', () => {
       it('should return true if the proposal was dismissed before', () => {
         const recovererAddress = faker.finance.ethereumAddress()
 
-        const { result, rerender } = renderHook(() => useDidDismissProposal())
+        const { result, rerender } = renderHook(() => _useDidDismissProposal())
 
         expect(result.current.wasProposalDismissed(recovererAddress)).toBeFalsy()
         result.current.dismissProposal(recovererAddress)
@@ -248,7 +256,7 @@ describe('RecoveryModal', () => {
       it('should persist dismissals between sessions', () => {
         const recovererAddress = faker.finance.ethereumAddress()
 
-        const firstRender = renderHook(() => useDidDismissProposal())
+        const firstRender = renderHook(() => _useDidDismissProposal())
 
         expect(firstRender.result.current.wasProposalDismissed(recovererAddress)).toBeFalsy()
         firstRender.result.current.dismissProposal(recovererAddress)
@@ -259,20 +267,20 @@ describe('RecoveryModal', () => {
 
         firstRender.unmount()
 
-        const secondRender = renderHook(() => useDidDismissProposal())
+        const secondRender = renderHook(() => _useDidDismissProposal())
         expect(secondRender.result.current.wasProposalDismissed(recovererAddress)).toBeTruthy()
       })
     })
 
     describe('useDidDismissInProgress', () => {
       // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-      let _useDidDismissInProgress: typeof import('./index').useDidDismissInProgress
+      let _useDidDismissInProgress: typeof import('./index')._useDidDismissInProgress
 
       beforeEach(() => {
         localStorage.clear()
 
         // Clear cache in between tests
-        _useDidDismissInProgress = require('./index').useDidDismissInProgress
+        _useDidDismissInProgress = require('./index')._useDidDismissInProgress
       })
 
       it('should return false if in-progress was not dismissed before', () => {

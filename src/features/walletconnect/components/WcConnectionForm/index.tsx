@@ -15,7 +15,15 @@ import { WALLETCONNECT_EVENTS } from '@/services/analytics/events/walletconnect'
 
 const WC_HINTS_KEY = 'wcHints'
 
-export const WcConnectionForm = ({ sessions, uri }: { sessions: SessionTypes.Struct[]; uri: string }): ReactElement => {
+export const WcConnectionForm = ({
+  sessions,
+  onDisconnect,
+  uri,
+}: {
+  sessions: SessionTypes.Struct[]
+  onDisconnect: (session: SessionTypes.Struct) => Promise<void>
+  uri: string
+}): ReactElement => {
   const [showHints = true, setShowHints] = useLocalStorage<boolean>(WC_HINTS_KEY)
   const { safeLoaded } = useSafeInfo()
 
@@ -30,12 +38,7 @@ export const WcConnectionForm = ({ sessions, uri }: { sessions: SessionTypes.Str
 
   return (
     <Grid className={css.container}>
-      <Grid
-        item
-        sx={{
-          textAlign: 'center',
-        }}
-      >
+      <Grid item textAlign="center">
         <Tooltip
           title={showHints ? 'Hide how WalletConnect works' : 'How does WalletConnect work?'}
           placement="top"
@@ -53,41 +56,30 @@ export const WcConnectionForm = ({ sessions, uri }: { sessions: SessionTypes.Str
 
         <WcLogoHeader />
 
-        <Typography
-          variant="body2"
-          sx={{
-            color: 'text.secondary',
-          }}
-        >
+        <Typography variant="body2" color="text.secondary">
           {safeLoaded
             ? `Paste the pairing code below to connect to your Safe{Wallet} via WalletConnect`
             : `Please open one of your Safe Accounts to connect to via WalletConnect`}
         </Typography>
 
         {safeLoaded ? (
-          <Box
-            sx={{
-              mt: 3,
-            }}
-          >
+          <Box mt={3}>
             <WcInput uri={uri} />
           </Box>
         ) : null}
       </Grid>
+
       <Divider flexItem />
+
       <Grid item>
-        <WcSessionList sessions={sessions} />
+        <WcSessionList sessions={sessions} onDisconnect={onDisconnect} />
       </Grid>
+
       {showHints && (
         <>
           <Divider flexItem />
 
-          <Grid
-            item
-            sx={{
-              mt: 1,
-            }}
-          >
+          <Grid item mt={1}>
             <WcHints />
           </Grid>
         </>

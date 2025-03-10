@@ -7,15 +7,12 @@ import type { AddressBook, AddressBookState } from '@/store/addressBookSlice'
 import type { AddedSafesState } from '@/store/addedSafesSlice'
 import type { SafeAppsState } from '@/store/safeAppsSlice'
 import type { SettingsState } from '@/store/settingsSlice'
-import type { UndeployedSafesState } from '@/features/counterfactual/store/undeployedSafesSlice'
 
 import { useMemo } from 'react'
-import type { VisitedSafesState } from '@/store/visitedSafesSlice'
 
 export const enum SAFE_EXPORT_VERSION {
   V1 = '1.0',
   V2 = '2.0',
-  V3 = '3.0',
 }
 
 export enum ImportErrors {
@@ -61,13 +58,6 @@ export const _filterValidAbEntries = (ab?: AddressBookState): AddressBookState |
  *  - safeApps
  *  - settings
  *
- * 3.0:
- *  - address book
- *  - added Safes
- *  - safeApps
- *  - settings
- *  - visited Safes
- *
  * @param jsonData
  * @returns data to import and some insights about it
  */
@@ -77,8 +67,6 @@ type Data = {
   addressBook?: AddressBookState
   settings?: SettingsState
   safeApps?: SafeAppsState
-  undeployedSafes?: UndeployedSafesState
-  visitedSafes?: VisitedSafesState
   error?: ImportErrors
   addressBookEntriesCount: number
   addedSafesCount: number
@@ -93,8 +81,6 @@ export const useGlobalImportJsonParser = (jsonData: string | undefined): Data =>
       addedSafes: undefined,
       settings: undefined,
       safeApps: undefined,
-      undeployedSafes: undefined,
-      visitedSafes: undefined,
     }
 
     if (!jsonData) {
@@ -130,18 +116,6 @@ export const useGlobalImportJsonParser = (jsonData: string | undefined): Data =>
         data.addedSafes = parsedFile.data.addedSafes
         data.settings = parsedFile.data.settings
         data.safeApps = parsedFile.data.safeApps
-        data.undeployedSafes = parsedFile.data.undeployedSafes
-
-        break
-      }
-
-      case SAFE_EXPORT_VERSION.V3: {
-        data.addressBook = _filterValidAbEntries(parsedFile.data.addressBook)
-        data.addedSafes = parsedFile.data.addedSafes
-        data.settings = parsedFile.data.settings
-        data.safeApps = parsedFile.data.safeApps
-        data.undeployedSafes = parsedFile.data.undeployedSafes
-        data.visitedSafes = parsedFile.data.visitedSafes
 
         break
       }

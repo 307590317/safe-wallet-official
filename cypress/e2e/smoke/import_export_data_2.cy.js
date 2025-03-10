@@ -1,10 +1,8 @@
 import 'cypress-file-upload'
 import * as file from '../pages/import_export.pages.js'
+import * as main from '../pages/main.page.js'
 import * as constants from '../../support/constants.js'
 import * as sidebar from '../pages/sidebar.pages.js'
-import { getSafes, CATEGORIES } from '../../support/safes/safesHandler.js'
-
-let staticSafes = []
 
 const validJsonPath = 'cypress/fixtures/data_import.json'
 const invalidJsonPath = 'cypress/fixtures/address_book_test.csv'
@@ -13,13 +11,11 @@ const invalidJsonPath_3 = 'cypress/fixtures/test-empty-batch.json'
 
 const appNames = ['Transaction Builder']
 
-describe('[SMOKE] Import Export Data tests 2', { defaultCommandTimeout: 20000 }, () => {
-  before(async () => {
-    staticSafes = await getSafes(CATEGORIES.static)
-  })
-
+describe('[SMOKE] Import Export Data tests 2', () => {
   beforeEach(() => {
-    cy.visit(constants.BALANCE_URL + staticSafes.SEP_STATIC_SAFE_13)
+    cy.visit(constants.BALANCE_URL + constants.SEPOLIA_TEST_SAFE_22_IMPORT)
+    cy.clearLocalStorage()
+    main.acceptCookies()
   })
 
   it('[SMOKE] Verify that the Sidebar Import button opens an import modal', () => {
@@ -34,9 +30,9 @@ describe('[SMOKE] Import Export Data tests 2', { defaultCommandTimeout: 20000 },
     file.verifyImportMessages()
     file.verifyImportBtnStatus(constants.enabledStates.enabled)
     file.clickOnImportBtn()
-    cy.visit(constants.addressBookUrl + staticSafes.SEP_STATIC_SAFE_13)
+    cy.visit(constants.addressBookUrl + constants.SEPOLIA_TEST_SAFE_22_IMPORT)
     file.verifyImportedAddressBookData()
-    cy.visit(constants.appsUrlGeneral + staticSafes.SEP_STATIC_SAFE_13)
+    cy.visit(constants.appsUrlGeneral + constants.SEPOLIA_TEST_SAFE_22_IMPORT)
     file.verifyPinnedApps(appNames)
   })
 
@@ -49,7 +45,7 @@ describe('[SMOKE] Import Export Data tests 2', { defaultCommandTimeout: 20000 },
   })
 
   it('[SMOKE] Verify the Import section is on the Global settings', () => {
-    cy.visit(constants.dataSettingsUrl + staticSafes.SEP_STATIC_SAFE_13)
+    cy.visit(constants.dataSettingsUrl + constants.SEPOLIA_TEST_SAFE_22_IMPORT)
     file.verifyImportSectionVisible()
     file.verifyValidImportInputExists()
   })
@@ -67,7 +63,7 @@ describe('[SMOKE] Import Export Data tests 2', { defaultCommandTimeout: 20000 },
   })
 
   it('[SMOKE] Verify that the Export section is present in the safe settings', () => {
-    cy.visit(constants.dataSettingsUrl + staticSafes.SEP_STATIC_SAFE_13)
+    cy.visit(constants.dataSettingsUrl + constants.SEPOLIA_TEST_SAFE_22_IMPORT)
     file.verifyExportFileSectionIsVisible()
   })
 })

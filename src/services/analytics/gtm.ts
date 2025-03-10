@@ -58,7 +58,7 @@ export const gtmSetDeviceType = (type: DeviceType): void => {
 }
 
 export const gtmSetSafeAddress = (safeAddress: string): void => {
-  commonEventParams.safeAddress = safeAddress.slice(2) // Remove 0x prefix
+  commonEventParams.safeAddress = safeAddress.slice(2)
 }
 
 export const gtmInit = (): void => {
@@ -159,7 +159,7 @@ export const normalizeAppName = (appName?: string): string => {
 }
 
 export const gtmTrackSafeApp = (eventData: AnalyticsEvent, appName?: string, sdkEventData?: SafeAppSDKEvent): void => {
-  if (!location.pathname.startsWith(AppRoutes.apps.index) && !eventData.label) {
+  if (!location.pathname.startsWith(AppRoutes.apps.index)) {
     return
   }
 

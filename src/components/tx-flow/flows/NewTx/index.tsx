@@ -1,8 +1,9 @@
 import { useCallback, useContext } from 'react'
-import { MakeASwapButton, SendTokensButton, TxBuilderButton } from '@/components/tx-flow/common/TxButton'
-import { Container, Grid, Paper, Typography } from '@mui/material'
+import { SendNFTsButton, SendTokensButton, TxBuilderButton } from '@/components/tx-flow/common/TxButton'
+import { Container, Grid, Paper, SvgIcon, Typography } from '@mui/material'
 import { TxModalContext } from '../../'
 import TokenTransferFlow from '../TokenTransfer'
+import AssetsIcon from '@/public/images/sidebar/assets.svg'
 import { useTxBuilderApp } from '@/hooks/safe-apps/useTxBuilderApp'
 import { ProgressBar } from '@/components/common/ProgressBar'
 import ChainIndicator from '@/components/common/ChainIndicator'
@@ -22,37 +23,16 @@ const NewTxFlow = () => {
 
   return (
     <Container className={css.container}>
-      <Grid
-        container
-        sx={{
-          justifyContent: 'center',
-        }}
-      >
+      <Grid container justifyContent="center">
         {/* Alignment of `TxLayout` */}
-        <Grid
-          item
-          xs={12}
-          md={11}
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
+        <Grid item xs={12} md={11} display="flex" flexDirection="column">
           <ChainIndicator inline className={css.chain} />
 
           <Grid container component={Paper}>
             <Grid item xs={12} className={css.progressBar}>
               <ProgressBar value={progress} />
             </Grid>
-            <Grid
-              item
-              xs={12}
-              md={6}
-              className={css.pane}
-              sx={{
-                gap: 3,
-              }}
-            >
+            <Grid item xs={12} md={6} className={css.pane} gap={3}>
               <div className={css.globs}>
                 <NewTxIcon />
               </div>
@@ -62,32 +42,21 @@ const NewTxFlow = () => {
               </Typography>
             </Grid>
 
-            <Grid
-              item
-              xs={12}
-              md={5}
-              className={css.pane}
-              sx={{
-                gap: 2,
-              }}
-            >
+            <Grid item xs={12} md={5} className={css.pane} gap={2}>
               <Typography variant="h4" className={css.type}>
-                Manage assets
+                <SvgIcon component={AssetsIcon} inheritViewBox color="secondary" />
+                Assets
               </Typography>
 
               <SendTokensButton onClick={onTokensClick} />
-              <MakeASwapButton />
+
+              <SendNFTsButton />
 
               {txBuilder?.app && (
                 <>
-                  <Typography
-                    variant="h4"
-                    className={css.type}
-                    sx={{
-                      mt: 3,
-                    }}
-                  >
-                    Interact with contracts
+                  <Typography variant="h4" className={css.type} mt={3}>
+                    <img src={txBuilder.app.iconUrl} height={24} width="auto" alt={txBuilder.app.name} /> Contract
+                    interaction
                   </Typography>
 
                   <TxBuilderButton />

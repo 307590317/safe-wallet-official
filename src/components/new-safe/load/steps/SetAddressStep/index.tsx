@@ -60,6 +60,7 @@ const SetAddressStep = ({ data, onSubmit, onBack }: StepRenderProps<LoadSafeForm
   } = formMethods
 
   const safeAddress = watch(Field.address)
+
   const randomName = useMnemonicSafeName()
   const { ens, name, resolving } = useAddressResolver(safeAddress)
 
@@ -101,14 +102,7 @@ const SetAddressStep = ({ data, onSubmit, onBack }: StepRenderProps<LoadSafeForm
     <FormProvider {...formMethods}>
       <form onSubmit={onFormSubmit}>
         <Box className={layoutCss.row}>
-          <Grid
-            container
-            spacing={[3, 1]}
-            sx={{
-              mb: 3,
-              pr: '40px',
-            }}
-          >
+          <Grid container spacing={[3, 1]} mb={3} pr="40px">
             <Grid item xs={12} md>
               <NameInput
                 name={Field.name}
@@ -134,12 +128,7 @@ const SetAddressStep = ({ data, onSubmit, onBack }: StepRenderProps<LoadSafeForm
                 }}
               />
             </Grid>
-            <Grid
-              item
-              sx={{
-                order: [-1, 1],
-              }}
-            >
+            <Grid item order={[-1, 1]}>
               <Box className={css.select}>
                 <NetworkSelector />
               </Box>
@@ -153,11 +142,7 @@ const SetAddressStep = ({ data, onSubmit, onBack }: StepRenderProps<LoadSafeForm
             name={Field.address}
           />
 
-          <Typography
-            sx={{
-              mt: 4,
-            }}
-          >
+          <Typography mt={4}>
             By continuing you consent to the{' '}
             <Link href={AppRoutes.terms} passHref legacyBehavior>
               <MUILink>terms of use</MUILink>
@@ -173,14 +158,7 @@ const SetAddressStep = ({ data, onSubmit, onBack }: StepRenderProps<LoadSafeForm
         <Divider />
 
         <Box className={layoutCss.row}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              gap: 3,
-            }}
-          >
+          <Box display="flex" flexDirection="row" justifyContent="space-between" gap={3}>
             <Button variant="outlined" size="small" onClick={handleBack} startIcon={<ArrowBackIcon fontSize="small" />}>
               Back
             </Button>

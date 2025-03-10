@@ -23,22 +23,8 @@ const ColoredFileIcon = ({ color }: { color: SvgIconTypeMap['props']['color'] })
 
 const UploadSummary = ({ fileInfo, onRemove }: { fileInfo: FileInfo; onRemove: (() => void) | MouseEventHandler }) => {
   return (
-    <Grid
-      container
-      direction="column"
-      sx={{
-        gap: 1,
-        mt: 3,
-      }}
-    >
-      <Grid
-        container
-        sx={{
-          gap: 1,
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
+    <Grid container direction="column" gap={1} mt={3}>
+      <Grid container gap={1} display="flex" alignItems="center">
         <Grid item xs={1}>
           <ColoredFileIcon color="primary" />
         </Grid>
@@ -47,40 +33,18 @@ const UploadSummary = ({ fileInfo, onRemove }: { fileInfo: FileInfo; onRemove: (
           {fileInfo.additionalInfo && ` - ${fileInfo.additionalInfo}`}
         </Grid>
 
-        <Grid
-          item
-          xs
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-          }}
-        >
+        <Grid item xs display="flex" justifyContent="flex-end">
           <IconButton onClick={onRemove} size="small">
             <HighlightOffIcon color="primary" />
           </IconButton>
         </Grid>
       </Grid>
-      <Grid
-        item
-        xs={12}
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-        }}
-      >
+      <Grid item xs={12} display="flex" justifyContent="flex-start">
         <div className={css.verticalLine} />
       </Grid>
       <>
         {fileInfo.summary.map((summaryItem, idx) => (
-          <Grid
-            key={`${fileInfo.name}${idx}`}
-            container
-            sx={{
-              display: 'flex',
-              gap: 1,
-              alignItems: 'center',
-            }}
-          >
+          <Grid key={`${fileInfo.name}${idx}`} container display="flex" gap={1} alignItems="center">
             <Grid item xs={1}>
               <ColoredFileIcon color="border" />
             </Grid>
@@ -90,14 +54,7 @@ const UploadSummary = ({ fileInfo, onRemove }: { fileInfo: FileInfo; onRemove: (
           </Grid>
         ))}
         {fileInfo.error && (
-          <Grid
-            container
-            sx={{
-              display: 'flex',
-              gap: 1,
-              alignItems: 'center',
-            }}
-          >
+          <Grid container display="flex" gap={1} alignItems="center">
             <Grid item xs={1}>
               <ColoredFileIcon color="border" />
             </Grid>
@@ -148,13 +105,8 @@ const FileUpload = ({
       }}
     >
       {getInputProps && <input {...getInputProps()} />}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-        }}
-      >
+
+      <Box display="flex" alignItems="center" gap={1}>
         <SvgIcon
           component={FileIcon}
           inheritViewBox

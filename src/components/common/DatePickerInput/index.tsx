@@ -2,6 +2,7 @@ import { useFormContext, Controller } from 'react-hook-form'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import TextField from '@mui/material/TextField'
 import { isFuture, isValid, startOfDay } from 'date-fns'
 
 import inputCss from '@/styles/inputs.module.css'
@@ -49,11 +50,14 @@ const DatePickerInput = ({
           <DatePicker
             className={inputCss.input}
             label={label}
-            format="dd/MM/yyyy"
+            inputFormat="dd/MM/yyyy"
             {...field}
             disableFuture={disableFuture}
-            slotProps={{
-              textField: { fullWidth: true, label: fieldState.error?.message || label, error: !!fieldState.error },
+            renderInput={({ label, error: _, ...params }) => (
+              <TextField label={fieldState.error?.message || label} {...params} fullWidth error={!!fieldState.error} />
+            )}
+            PaperProps={{
+              elevation: 2,
             }}
           />
         </LocalizationProvider>

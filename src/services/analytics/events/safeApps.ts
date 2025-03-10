@@ -34,10 +34,6 @@ export const SAFE_APPS_EVENTS = {
     ...SAFE_APPS_EVENT_DATA,
     action: 'Add custom Safe App',
   },
-  OPEN_TRANSACTION_MODAL: {
-    ...SAFE_APPS_EVENT_DATA,
-    action: 'Open Transaction modal',
-  },
   PROPOSE_TRANSACTION: {
     ...SAFE_APPS_EVENT_DATA,
     action: 'Propose Transaction',
@@ -69,13 +65,4 @@ export const SAFE_APPS_EVENTS = {
     category: SAFE_APPS_SDK_CATEGORY,
     action: 'SDK method call',
   },
-}
-
-export enum SAFE_APPS_LABELS {
-  dashboard = 'dashboard',
-  apps_pinned = 'apps_pinned',
-  apps_featured = 'apps_featured',
-  apps_all = 'apps_all',
-  apps_custom = 'apps_custom',
-  apps_sidebar = 'apps_sidebar',
 }

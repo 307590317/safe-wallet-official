@@ -8,7 +8,7 @@ import { OperationType } from '@safe-global/safe-core-sdk-types'
 import TxLayout from '../../common/TxLayout'
 import BatchIcon from '@/public/images/common/batch.svg'
 import { useDraftBatch } from '@/hooks/useDraftBatch'
-import { maybePlural } from '@/utils/formatters'
+import BatchTxList from '@/components/batch/BatchSidebar/BatchTxList'
 
 type ConfirmBatchProps = {
   onSubmit: () => void
@@ -32,15 +32,20 @@ const ConfirmBatch = ({ onSubmit }: ConfirmBatchProps): ReactElement => {
     createMultiSendCallOnlyTx(calls).then(setSafeTx).catch(setSafeTxError)
   }, [batchTxs, setSafeTx, setSafeTxError])
 
-  return <SignOrExecuteForm onSubmit={onSubmit} isBatch />
+  return (
+    <SignOrExecuteForm onSubmit={onSubmit} isBatch>
+      <BatchTxList txItems={batchTxs} />
+    </SignOrExecuteForm>
+  )
 }
 
 const ConfirmBatchFlow = (props: ConfirmBatchProps) => {
   const { length } = useDraftBatch()
+
   return (
     <TxLayout
       title="Confirm batch"
-      subtitle={`This batch contains ${length} transaction${maybePlural(length)}`}
+      subtitle={`This batch contains ${length} transaction${length > 1 ? 's' : ''}`}
       icon={BatchIcon}
       step={0}
       isBatch

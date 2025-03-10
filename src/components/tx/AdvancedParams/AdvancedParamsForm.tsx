@@ -4,7 +4,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { safeFormatUnits, safeParseUnits } from '@/utils/formatters'
 import { FLOAT_REGEX } from '@/utils/validation'
 import ModalDialog from '@/components/common/ModalDialog'
-import { AdvancedField, type AdvancedParameters } from './types'
+import { AdvancedField, type AdvancedParameters } from './types.d'
 import GasLimitInput from './GasLimitInput'
 import ExternalLink from '@/components/common/ExternalLink'
 import NumberField from '@/components/common/NumberField'
@@ -15,7 +15,7 @@ type AdvancedParamsFormProps = {
   onSubmit: (params: AdvancedParameters) => void
   recommendedGasLimit?: AdvancedParameters['gasLimit']
   isExecution: boolean
-  isEIP1559?: boolean
+  isEIP1559: boolean
   willRelay?: boolean
 }
 
